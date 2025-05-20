@@ -26,7 +26,8 @@ class AuthController extends Controller
             $user = Auth::user();
 
             if ($user->role === 'admin') {
-                return redirect()->route('admin.videos.index')->with('success', 'Logged in successfully!');
+                Auth::logout(); // Log out to prevent admin access via user login
+                return redirect()->route('admin.login')->with('error', 'Admins must log in at /admin/login.');
             }
 
             return redirect()->route('user.home')->with('success', 'Logged in successfully!');

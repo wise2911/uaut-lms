@@ -5,130 +5,128 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\Video;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use App\Models\Segment;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class VideoController extends Controller
 {
-    protected function checkAdmin()
-    {
-        if (Auth::user()->role !== 'admin') {
-            return redirect()->route('login')->with('error', 'Unauthorized access.');
-        }
-        return null;
-    }
-
     public function index()
     {
-        if ($redirect = $this->checkAdmin()) {
-            return $redirect;
-        }
-
-        $videos = Video::with('course')->get();
-        return view('admin.videos.index', compact('videos'));
+        $courses = Course::with('videos')->get();
+        return view('admin.videos.index', compact('courses'));
     }
 
     public function create()
     {
-        if ($redirect = $this->checkAdmin()) {
-            return $redirect;
-        }
-
-        return view('admin.videos.create');
+        $courses = Course::all();
+        return view('admin.videos.create', compact('courses'));
     }
 
     public function store(Request $request)
     {
-        if ($redirect = $this->checkAdmin()) {
-            return $redirect;
-        }
-
-        $request->validate([
+        $validated = $request->validate([
             'new_course.title' => 'required|string|max:255',
             'new_course.description' => 'required|string',
             'new_course.department' => 'required|in:COBA,COEIT',
             'new_course.instructor_name' => 'required|string|max:255',
-            'new_course.learning_outcomes' => 'required|array|min:1',
-            'new_course.learning_outcomes.*' => 'required|string',
-            'new_course.thumbnail' => 'nullable|image|mimes:jpeg,png|max:5120', // 5MB max
-            'new_course.topics' => 'required|array|min:1',
-            'new_course.topics.*.title' => 'required|string',
-            'new_course.topics.*.duration' => 'required|string',
-            'new_course.topics.*.lessons' => 'required|array|min:1',
-            'new_course.topics.*.lessons.*' => 'required|string',
-            'new_course.topics.*.videos' => 'required|array|min:1',
-            'new_course.topics.*.videos.*.title' => 'required|string|max:255',
-            'new_course.topics.*.videos.*.file' => 'required|file|mimes:mp4,mov,avi|max:102400', // 100MB max
-            'new_course.topics.*.videos.*.order' => 'required|integer|min:1',
+            'new_course.thumbnail' => 'nullable|image|mimes:jpeg,png|max:2048',
+            'new_course.videos.preview.url' => 'required|string|max:255',
+            'new_course.videos.segments.*.title' => 'required|string|max:255',
+            'new_course.videos.segments.*.url' => 'required|string|max:255',
+            'new_course.videos.segments.*.order' => 'required|integer|min:1',
         ]);
 
-        // Upload thumbnail to Cloudinary if provided
-        $thumbnailUrl = null;
-        if ($request->hasFile('new_course.thumbnail')) {
-            $uploadedThumbnail = Cloudinary::upload($request->file('new_course.thumbnail')->getRealPath(), [
-                'folder' => 'lms_thumbnails',
-                'resource_type' => 'image',
-            ]);
-            $thumbnailUrl = $uploadedThumbnail->getSecurePath();
-        }
+        // Handle thumbnail upload
+        $thumbnailPath = $request->file('new_course.thumbnail')
+            ? $request->file('new_course.thumbnail')->store('thumbnails', 'public')
+            : null;
 
-        // Create course
+        // Create the Course
         $course = Course::create([
-            'title' => $request->new_course['title'],
-            'description' => $request->new_course['description'],
-            'department' => $request->new_course['department'],
-            'instructor_name' => $request->new_course['instructor_name'],
-            'learning_outcomes' => json_encode($request->new_course['learning_outcomes']),
-            'topics' => json_encode(array_map(function ($topic) {
-                return [
-                    'title' => $topic['title'],
-                    'duration' => $topic['duration'],
-                    'lessons' => $topic['lessons'],
-                ];
-            }, $request->new_course['topics'])),
-            'thumbnail_url' => $thumbnailUrl,
+            'title' => $validated['new_course']['title'],
+            'description' => $validated['new_course']['description'],
+            'department' => $validated['new_course']['department'],
+            'instructor_name' => $validated['new_course']['instructor_name'],
+            'thumbnail' => $thumbnailPath,
         ]);
 
-        // Upload videos to Cloudinary and create video records
-        foreach ($request->new_course['topics'] as $topicIndex => $topic) {
-            foreach ($topic['videos'] as $videoData) {
-                $uploadedVideo = Cloudinary::uploadVideo($videoData['file']->getRealPath(), [
-                    'folder' => 'lms_videos',
-                    'resource_type' => 'video',
-                ]);
+        // Create the Preview Video
+        $previewVideo = $course->videos()->create([
+            'title' => $course->title . ' Preview',
+            'url' => $validated['new_course']['videos']['preview']['url'],
+            'is_preview' => true,
+        ]);
 
-                $publicId = $uploadedVideo->getPublicId();
-                $videoInfo = Cloudinary::getResource($publicId, ['resource_type' => 'video']);
-                $duration = $videoInfo['duration'] ?? 0;
-
-                $video = new Video([
-                    'course_id' => $course->id,
-                    'title' => $videoData['title'],
-                    'cloudinary_url' => $uploadedVideo->getSecurePath(),
-                    'topic_index' => $topicIndex,
-                    'order' => $videoData['order'],
-                    'duration' => $duration,
+        // Create Video Segments
+        if (isset($validated['new_course']['videos']['segments'])) {
+            foreach ($validated['new_course']['videos']['segments'] as $segmentData) {
+                $previewVideo->segments()->create([
+                    'title' => $segmentData['title'],
+                    'url' => $segmentData['url'],
+                    'order' => $segmentData['order'],
                 ]);
-                $video->segments = $video->generateSegments(1200); // 20 minutes = 1200 seconds
-                $video->save();
             }
         }
 
-        return redirect()->route('admin.videos.index')->with('success', 'Course and videos created successfully.');
+        return redirect()->route('admin.videos.index')->with('success', 'Course created successfully.');
+    }
+
+    public function edit(Video $video)
+    {
+        return view('admin.videos.edit', compact('video'));
+    }
+
+    public function update(Request $request, Video $video)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'url' => 'required|string|max:255',
+            'is_preview' => 'boolean',
+        ]);
+
+        $video->update($request->all());
+
+        return redirect()->route('admin.videos.edit', $video)->with('success', 'Video updated successfully.');
+    }
+
+    public function storeSegment(Request $request, Video $video)
+    {
+        $request->validate([
+            'segments' => 'required|array',
+            'segments.*.title' => 'required|string|max:255',
+            'segments.*.video' => 'required|mimes:mp4|max:102400', // 100MB max
+            'segments.*.order' => 'required|integer|min:1',
+        ]);
+
+        foreach ($request->file('segments') as $index => $segment) {
+            $path = $segment['video']->store('videos/html', 'public');
+
+            Segment::create([
+                'video_id' => $video->id,
+                'title' => $request->input("segments.$index.title"),
+                'url' => $path,
+                'order' => $request->input("segments.$index.order"),
+            ]);
+        }
+
+        return redirect()->route('admin.videos.edit', $video)->with('success', 'Segments added successfully.');
+    }
+
+    public function destroySegment(Video $video, Segment $segment)
+    {
+        Storage::disk('public')->delete($segment->url);
+        $segment->delete();
+
+        return redirect()->route('admin.videos.edit', $video)->with('success', 'Segment deleted successfully.');
     }
 
     public function destroy(Video $video)
     {
-        if ($redirect = $this->checkAdmin()) {
-            return $redirect;
+        foreach ($video->segments as $segment) {
+            Storage::disk('public')->delete($segment->url);
+            $segment->delete();
         }
-
-        // Delete video from Cloudinary
-        $publicId = basename($video->cloudinary_url, '.' . pathinfo($video->cloudinary_url, PATHINFO_EXTENSION));
-        Cloudinary::destroy($publicId, ['resource_type' => 'video']);
-
-        // Delete video record
         $video->delete();
 
         return redirect()->route('admin.videos.index')->with('success', 'Video deleted successfully.');

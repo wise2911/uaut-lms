@@ -65,7 +65,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <!-- Course 1 -->
             <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
-                <div class="relative" style="padding-bottom: 56.25%;">
+                <div class="relative" style="padding-block-end: 56.25%;">
                     <iframe class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/W6NZfCO5SIk" title="Web Development Overview" frameborder="0" allowfullscreen></iframe>
                 </div>
                 <div class="p-6">
@@ -80,7 +80,7 @@
             
             <!-- Course 2 -->
             <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
-                <div class="relative" style="padding-bottom: 56.25%;">
+                <div class="relative" style="padding-block-end: 56.25%;">
                     <iframe class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/VwN91x5i25g?list=PLBlnK6fEyqRgMCUAG0XRw78UA8qnv6jEx" title="Computer Networking Overview" frameborder="0" allowfullscreen></iframe>
                 </div>
                 <div class="p-6">
@@ -95,7 +95,7 @@
             
             <!-- Course 3 -->
             <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
-                <div class="relative" style="padding-bottom: 56.25%;">
+                <div class="relative" style="padding-block-end: 56.25%;">
                     <iframe class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/I9ceqw5Ny-4?list=PLSzsOkUDsvdtl3Pw48-R8lcK2oYkk40cm" title="Mobile Application Overview" frameborder="0" allowfullscreen></iframe>
                 </div>
                 <div class="p-6">

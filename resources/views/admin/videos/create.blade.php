@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Course/Video | UAUT LMS</title>
+    <title>Add New Course | UAUT LMS</title>
     <link rel="shortcut icon" href="{{ url('img/uaut-logo.jpg') }}" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -22,7 +22,6 @@
     </script>
 </head>
 <body class="bg-gray-100 font-sans antialiased flex">
-    <!-- Sidebar -->
     <aside id="sidebar" class="bg-secondary text-white w-64 min-h-screen p-4 fixed top-0 left-0 transition-transform duration-300 transform lg:translate-x-0 -translate-x-full z-20">
         <div class="flex items-center mb-8">
             <img src="{{ url('img/uaut-logo.jpg') }}" alt="UAUT LMS" class="h-8 w-8 mr-3">
@@ -31,15 +30,15 @@
         <nav>
             <ul class="space-y-2">
                 <li>
-                    <a href="{{ route('admin.videos.index') }}" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition-colors {{ Route::is('admin.videos.*') ? 'bg-gray-700' : '' }}">
+                    <a href="{{ route('admin.videos.index') }}" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition-colors {{ Route::is('admin.videos.index') ? 'bg-gray-700' : '' }}">
                         <i class="fas fa-video mr-3"></i>
                         <span>Manage Videos</span>
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('admin.users') }}" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition-colors {{ Route::is('admin.users') ? 'bg-gray-700' : '' }}">
-                        <i class="fas fa-users mr-3"></i>
-                        <span>Manage Users</span>
+                    <a href="{{ route('admin.videos.create') }}" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition-colors {{ Route::is('admin.videos.create') ? 'bg-gray-700' : '' }}">
+                        <i class="fas fa-plus mr-3"></i>
+                        <span>Add Course</span>
                     </a>
                 </li>
                 <li>
@@ -55,302 +54,161 @@
         </nav>
     </aside>
 
-    <!-- Main Content -->
     <main class="flex-1 p-6 lg:ml-64 transition-all duration-300">
-        <!-- Mobile Sidebar Toggle -->
         <button id="sidebar-toggle" class="lg:hidden fixed top-4 left-4 z-30 bg-primary text-white p-2 rounded-full">
             <i class="fas fa-bars"></i>
         </button>
 
-        <!-- Header -->
-        <header class="bg-white shadow-sm rounded-lg p-4 mb-6 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-gray-800">Create New Course/Video</h1>
-            <a href="{{ route('admin.videos.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
-                <i class="fas fa-arrow-left mr-2"></i> Back to Videos
-            </a>
+        <header class="bg-white shadow-sm rounded-lg p-4 mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Add New Course</h1>
         </header>
 
-        <!-- Alerts -->
-        @if ($errors->any())
-            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-lg">
-                <ul class="list-disc pl-5">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        <!-- Form -->
-        <div class="bg-white rounded-xl shadow-lg p-6 max-w-3xl mx-auto">
-            <form id="videoUploadForm" action="{{ route('admin.videos.store') }}" method="POST" enctype="multipart/form-data">
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <form id="course-form" action="{{ route('admin.videos.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                <!-- New Course -->
-                <div class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label for="title" class="block text-gray-700 font-medium mb-2">Course Title</label>
-                        <input type="text" name="new_course[title]" id="title" value="{{ old('new_course.title') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" required>
-                    </div>
-                    <div>
-                        <label for="description" class="block text-gray-700 font-medium mb-2">Description</label>
-                        <textarea name="new_course[description]" id="description" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" required>{{ old('new_course.description') }}</textarea>
-                    </div>
-                    <div>
-                        <label for="department" class="block text-gray-700 font-medium mb-2">Department</label>
-                        <select name="new_course[department]" id="department" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" required>
-                            <option value="COBA" {{ old('new_course.department') == 'COBA' ? 'selected' : '' }}>COBA</option>
-                            <option value="COEIT" {{ old('new_course.department') == 'COEIT' ? 'selected' : '' }}>COEIT</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="instructor_name" class="block text-gray-700 font-medium mb-2">Instructor Name</label>
-                        <input type="text" name="new_course[instructor_name]" id="instructor_name" value="{{ old('new_course.instructor_name') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" required>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-2">Learning Outcomes</label>
-                        <div id="learning-outcomes-container" class="space-y-2">
-                            <div class="flex items-center space-x-2">
-                                <input type="text" name="new_course[learning_outcomes][]" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" value="{{ old('new_course.learning_outcomes.0') }}" placeholder="Enter learning outcome">
-                                <button type="button" class="remove-outcome text-red-600 hover:text-red-800" disabled><i class="fas fa-trash"></i></button>
-                            </div>
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">Course Details</h2>
+                        <div class="mb-4">
+                            <label for="title" class="block text-gray-700 font-medium mb-2">Course Title</label>
+                            <input type="text" name="new_course[title]" id="title" value="{{ old('new_course.title') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary @error('new_course.title') border-red-500 @enderror" required>
+                            @error('new_course.title')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
-                        <button type="button" id="add-outcome" class="mt-2 text-primary hover:underline flex items-center">
-                            <i class="fas fa-plus mr-2"></i> Add Learning Outcome
-                        </button>
+                        <div class="mb-4">
+                            <label for="description" class="block text-gray-700 font-medium mb-2">Description</label>
+                            <textarea name="new_course[description]" id="description" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary @error('new_course.description') border-red-500 @enderror" rows="4" required>{{ old('new_course.description') }}</textarea>
+                            @error('new_course.description')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="mb-4">
+                            <label for="department" class="block text-gray-700 font-medium mb-2">Department</label>
+                            <select name="new_course[department]" id="department" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary @error('new_course.department') border-red-500 @enderror" required>
+                                <option value="">Select Department</option>
+                                <option value="COBA" {{ old('new_course.department') == 'COBA' ? 'selected' : '' }}>COBA</option>
+                                <option value="COEIT" {{ old('new_course.department') == 'COEIT' ? 'selected' : '' }}>COEIT</option>
+                            </select>
+                            @error('new_course.department')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="mb-4">
+                            <label for="instructor_name" class="block text-gray-700 font-medium mb-2">Instructor Name</label>
+                            <input type="text" name="new_course[instructor_name]" id="instructor_name" value="{{ old('new_course.instructor_name') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary @error('new_course.instructor_name') border-red-500 @enderror" required>
+                            @error('new_course.instructor_name')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="mb-4">
+                            <label for="thumbnail" class="block text-gray-700 font-medium mb-2">Thumbnail</label>
+                            <input type="file" name="new_course[thumbnail]" id="thumbnail" accept="image/jpeg,image/png" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-indigo-700 @error('new_course.thumbnail') border-red-500 @enderror">
+                            @error('new_course.thumbnail')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
+
                     <div>
-                        <label for="thumbnail" class="block text-gray-700 font-medium mb-2">Course Thumbnail</label>
-                        <input type="file" name="new_course[thumbnail]" id="thumbnail" accept="image/jpeg,image/png" class="w-full border border-gray-300 rounded-lg px-4 py-2">
-                        <p class="text-sm text-gray-500 mt-1">Max size: 5MB (JPEG, PNG)</p>
-                    </div>
-                    <!-- Dynamic Topics -->
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-2">Topics</label>
-                        <div id="topics-container" class="space-y-4">
-                            <div class="topic bg-gray-50 p-4 rounded-lg">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">Video Content</h2>
+                        <div class="mb-4">
+                            <label for="preview_url" class="block text-gray-700 font-medium mb-2">Preview Video URL</label>
+                            <input type="text" name="new_course[videos][preview][url]" id="preview_url" value="{{ old('new_course.videos.preview.url') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary @error('new_course.videos.preview.url') border-red-500 @enderror" placeholder="e.g., videos/html/preview.mp4" required>
+                            <p class="text-gray-500 text-sm mt-1">Enter path relative to public/, e.g., videos/html/preview.mp4</p>
+                            @error('new_course.videos.preview.url')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div id="segments">
+                            <h3 class="text-lg font-medium text-gray-800 mb-2">Video Segments</h3>
+                            <div class="segment mb-4 p-4 border border-gray-200 rounded-lg">
                                 <div class="mb-2">
-                                    <label class="block text-gray-700 text-sm">Topic Title</label>
-                                    <input type="text" name="new_course[topics][0][title]" class="w-full border border-gray-300 rounded-lg px-4 py-2" value="{{ old('new_course.topics.0.title') }}" required>
+                                    <label for="segment_title_0" class="block text-gray-700 font-medium">Title</label>
+                                    <input type="text" name="new_course[videos][segments][0][title]" id="segment_title_0" value="{{ old('new_course.videos.segments.0.title') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary @error('new_course.videos.segments.0.title') border-red-500 @enderror" required>
+                                    @error('new_course.videos.segments.0.title')
+                                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
                                 </div>
                                 <div class="mb-2">
-                                    <label class="block text-gray-700 text-sm">Duration</label>
-                                    <input type="text" name="new_course[topics][0][duration]" class="w-full border border-gray-300 rounded-lg px-4 py-2" value="{{ old('new_course.topics.0.duration') }}" required>
+                                    <label for="segment_url_0" class="block text-gray-700 font-medium">Video URL</label>
+                                    <input type="text" name="new_course[videos][segments][0][url]" id="segment_url_0" value="{{ old('new_course.videos.segments.0.url') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary @error('new_course.videos.segments.0.url') border-red-500 @enderror" placeholder="e.g., videos/html/lesson1.mp4" required>
+                                    <p class="text-gray-500 text-sm mt-1">Enter path relative to public/, e.g., videos/html/lesson1.mp4</p>
+                                    @error('new_course.videos.segments.0.url')
+                                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
                                 </div>
-                                <div>
-                                    <label class="block text-gray-700 text-sm">Lessons</label>
-                                    <div class="lessons-container space-y-2">
-                                        <div class="flex items-center space-x-2">
-                                            <input type="text" name="new_course[topics][0][lessons][]" class="w-full border border-gray-300 rounded-lg px-4 py-2" value="{{ old('new_course.topics.0.lessons.0') }}" placeholder="Enter lesson" required>
-                                            <button type="button" class="remove-lesson text-red-600 hover:text-red-800" disabled><i class="fas fa-trash"></i></button>
-                                        </div>
-                                    </div>
-                                    <button type="button" class="add-lesson mt-2 text-primary hover:underline flex items-center">
-                                        <i class="fas fa-plus mr-2"></i> Add Lesson
-                                    </button>
-                                </div>
-                                <!-- Video Segments -->
-                                <div class="mt-4">
-                                    <label class="block text-gray-700 text-sm">Video Segments</label>
-                                    <div class="videos-container space-y-2">
-                                        <div class="video-segment bg-white p-4 rounded-lg border">
-                                            <div class="mb-2">
-                                                <label class="block text-gray-700 text-sm">Video Title</label>
-                                                <input type="text" name="new_course[topics][0][videos][0][title]" class="w-full border border-gray-300 rounded-lg px-4 py-2" value="{{ old('new_course.topics.0.videos.0.title') }}" required>
-                                            </div>
-                                            <div class="mb-2">
-                                                <label class="block text-gray-700 text-sm">Video File</label>
-                                                <input type="file" name="new_course[topics][0][videos][0][file]" accept="video/mp4,video/mov,video/avi" class="w-full border border-gray-300 rounded-lg px-4 py-2" required>
-                                                <p class="text-sm text-gray-500 mt-1">Max size: 100MB (MP4, MOV, AVI)</p>
-                                            </div>
-                                            <div>
-                                                <label class="block text-gray-700 text-sm">Order</label>
-                                                <input type="number" name="new_course[topics][0][videos][0][order]" min="1" value="{{ old('new_course.topics.0.videos.0.order', 1) }}" class="w-full border border-gray-300 rounded-lg px-4 py-2" required>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <button type="button" class="add-video mt-2 text-primary hover:underline flex items-center">
-                                        <i class="fas fa-plus mr-2"></i> Add Video Segment
-                                    </button>
+                                <div class="mb-2">
+                                    <label for="segment_order_0" class="block text-gray-700 font-medium">Order</label>
+                                    <input type="number" name="new_course[videos][segments][0][order]" id="segment_order_0" value="{{ old('new_course.videos.segments.0.order') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary @error('new_course.videos.segments.0.order') border-red-500 @enderror" min="1" required>
+                                    @error('new_course.videos.segments.0.order')
+                                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
                                 </div>
                             </div>
                         </div>
-                        <button type="button" id="add-topic" class="mt-2 text-primary hover:underline flex items-center">
-                            <i class="fas fa-plus mr-2"></i> Add Topic
+                        <button type="button" id="add-segment" class="inline-flex items-center px-4 py-2 bg-accent text-white rounded-lg hover:bg-green-600 transition-colors">
+                            <i class="fas fa-plus mr-2"></i> Add Segment
                         </button>
                     </div>
                 </div>
-
-                <button type="submit" id="uploadButton" class="w-full bg-primary text-white px-4 py-3 rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center disabled:bg-gray-400" disabled>
-                    <i class="fas fa-upload mr-2"></i> Create Course & Upload Videos
-                </button>
+                <div class="mt-6">
+                    <button type="submit" id="submit-btn" class="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                        <i class="fas fa-save mr-2"></i> Create Course
+                    </button>
+                </div>
             </form>
         </div>
     </main>
 
     <script>
-        // Sidebar Toggle
+        let segmentCount = 1; // Start from 1 since we have one segment pre-filled
+        const addSegmentBtn = document.getElementById('add-segment');
+        const segmentsDiv = document.getElementById('segments');
+        const form = document.getElementById('course-form');
+        const submitBtn = document.getElementById('submit-btn');
+
+        addSegmentBtn.addEventListener('click', () => {
+            const segmentHtml = `
+                <div class="segment mb-4 p-4 border border-gray-200 rounded-lg relative">
+                    <button type="button" class="remove-segment absolute top-2 right-2 text-red-600 hover:text-red-800">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    <div class="mb-2">
+                        <label for="segment_title_${segmentCount}" class="block text-gray-700 font-medium">Title</label>
+                        <input type="text" name="new_course[videos][segments][${segmentCount}][title]" id="segment_title_${segmentCount}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" required>
+                    </div>
+                    <div class="mb-2">
+                        <label for="segment_url_${segmentCount}" class="block text-gray-700 font-medium">Video URL</label>
+                        <input type="text" name="new_course[videos][segments][${segmentCount}][url]" id="segment_url_${segmentCount}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g., videos/html/lesson${segmentCount + 1}.mp4" required>
+                        <p class="text-gray-500 text-sm mt-1">Enter path relative to public/, e.g., videos/html/lesson${segmentCount + 1}.mp4</p>
+                    </div>
+                    <div class="mb-2">
+                        <label for="segment_order_${segmentCount}" class="block text-gray-700 font-medium">Order</label>
+                        <input type="number" name="new_course[videos][segments][${segmentCount}][order]" id="segment_order_${segmentCount}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" min="1" required>
+                    </div>
+                </div>
+            `;
+            segmentsDiv.insertAdjacentHTML('beforeend', segmentHtml);
+            segmentCount++;
+        });
+
+        segmentsDiv.addEventListener('click', (e) => {
+            if (e.target.closest('.remove-segment')) {
+                e.target.closest('.segment').remove();
+            }
+        });
+
+        // Sidebar toggle
         const sidebar = document.getElementById('sidebar');
-        const toggle = document.getElementById('sidebar-toggle');
-        toggle.addEventListener('click', () => {
+        const toggleBtn = document.getElementById('sidebar-toggle');
+        toggleBtn.addEventListener('click', () => {
             sidebar.classList.toggle('-translate-x-full');
         });
 
-        // Dynamic Learning Outcomes
-        let outcomeIndex = 1;
-        document.getElementById('add-outcome').addEventListener('click', () => {
-            const container = document.getElementById('learning-outcomes-container');
-            const outcomeDiv = document.createElement('div');
-            outcomeDiv.className = 'flex items-center space-x-2';
-            outcomeDiv.innerHTML = `
-                <input type="text" name="new_course[learning_outcomes][]" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Enter learning outcome">
-                <button type="button" class="remove-outcome text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button>
-            `;
-            container.appendChild(outcomeDiv);
-            outcomeIndex++;
-            updateRemoveButtons(container, 'remove-outcome');
-            updateButtonState();
+        submitBtn.addEventListener('click', () => {
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating...';
         });
-
-        // Dynamic Topics
-        let topicIndex = 1;
-        document.getElementById('add-topic').addEventListener('click', () => {
-            const container = document.getElementById('topics-container');
-            const topicDiv = document.createElement('div');
-            topicDiv.className = 'topic bg-gray-50 p-4 rounded-lg';
-            topicDiv.innerHTML = `
-                <div class="mb-2">
-                    <label class="block text-gray-700 text-sm">Topic Title</label>
-                    <input type="text" name="new_course[topics][${topicIndex}][title]" class="w-full border border-gray-300 rounded-lg px-4 py-2" required>
-                </div>
-                <div class="mb-2">
-                    <label class="block text-gray-700 text-sm">Duration</label>
-                    <input type="text" name="new_course[topics][${topicIndex}][duration]" class="w-full border border-gray-300 rounded-lg px-4 py-2" required>
-                </div>
-                <div>
-                    <label class="block text-gray-700 text-sm">Lessons</label>
-                    <div class="lessons-container space-y-2">
-                        <div class="flex items-center space-x-2">
-                            <input type="text" name="new_course[topics][${topicIndex}][lessons][]" class="w-full border border-gray-300 rounded-lg px-4 py-2" placeholder="Enter lesson" required>
-                            <button type="button" class="remove-lesson text-red-600 hover:text-red-800" disabled><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
-                    <button type="button" class="add-lesson mt-2 text-primary hover:underline flex items-center">
-                        <i class="fas fa-plus mr-2"></i> Add Lesson
-                    </button>
-                </div>
-                <div class="mt-4">
-                    <label class="block text-gray-700 text-sm">Video Segments</label>
-                    <div class="videos-container space-y-2">
-                        <div class="video-segment bg-white p-4 rounded-lg border">
-                            <div class="mb-2">
-                                <label class="block text-gray-700 text-sm">Video Title</label>
-                                <input type="text" name="new_course[topics][${topicIndex}][videos][0][title]" class="w-full border border-gray-300 rounded-lg px-4 py-2" required>
-                            </div>
-                            <div class="mb-2">
-                                <label class="block text-gray-700 text-sm">Video File</label>
-                                <input type="file" name="new_course[topics][${topicIndex}][videos][0][file]" accept="video/mp4,video/mov,video/avi" class="w-full border border-gray-300 rounded-lg px-4 py-2" required>
-                                <p class="text-sm text-gray-500 mt-1">Max size: 100MB (MP4, MOV, AVI)</p>
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 text-sm">Order</label>
-                                <input type="number" name="new_course[topics][${topicIndex}][videos][0][order]" min="1" value="1" class="w-full border border-gray-300 rounded-lg px-4 py-2" required>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" class="add-video mt-2 text-primary hover:underline flex items-center">
-                        <i class="fas fa-plus mr-2"></i> Add Video Segment
-                    </button>
-                </div>
-                <button type="button" class="remove-topic text-red-600 hover:underline mt-2">Remove Topic</button>
-            `;
-            container.appendChild(topicDiv);
-            topicIndex++;
-            addTopicListeners(topicDiv);
-            updateRemoveButtons(container, 'remove-topic');
-            updateButtonState();
-        });
-
-        function addTopicListeners(topicDiv) {
-            // Add Lesson
-            topicDiv.querySelector('.add-lesson').addEventListener('click', () => {
-                const lessonsContainer = topicDiv.querySelector('.lessons-container');
-                const lessonDiv = document.createElement('div');
-                lessonDiv.className = 'flex items-center space-x-2';
-                const topicIdx = topicDiv.querySelector('input[name*="topics"]').name.match(/\[(\d+)\]/)[1];
-                lessonDiv.innerHTML = `
-                    <input type="text" name="new_course[topics][${topicIdx}][lessons][]" class="w-full border border-gray-300 rounded-lg px-4 py-2" placeholder="Enter lesson" required>
-                    <button type="button" class="remove-lesson text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button>
-                `;
-                lessonsContainer.appendChild(lessonDiv);
-                updateRemoveButtons(lessonsContainer, 'remove-lesson');
-                updateButtonState();
-            });
-
-            // Add Video
-            let videoIndex = 1;
-            topicDiv.querySelector('.add-video').addEventListener('click', () => {
-                const videosContainer = topicDiv.querySelector('.videos-container');
-                const videoDiv = document.createElement('div');
-                videoDiv.className = 'video-segment bg-white p-4 rounded-lg border';
-                const topicIdx = topicDiv.querySelector('input[name*="topics"]').name.match(/\[(\d+)\]/)[1];
-                videoDiv.innerHTML = `
-                    <div class="mb-2">
-                        <label class="block text-gray-700 text-sm">Video Title</label>
-                        <input type="text" name="new_course[topics][${topicIdx}][videos][${videoIndex}][title]" class="w-full border border-gray-300 rounded-lg px-4 py-2" required>
-                    </div>
-                    <div class="mb-2">
-                        <label class="block text-gray-700 text-sm">Video File</label>
-                        <input type="file" name="new_course[topics][${topicIdx}][videos][${videoIndex}][file]" accept="video/mp4,video/mov,video/avi" class="w-full border border-gray-300 rounded-lg px-4 py-2" required>
-                        <p class="text-sm text-gray-500 mt-1">Max size: 100MB (MP4, MOV, AVI)</p>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm">Order</label>
-                        <input type="number" name="new_course[topics][${topicIdx}][videos][${videoIndex}][order]" min="1" value="${videoIndex + 1}" class="w-full border border-gray-300 rounded-lg px-4 py-2" required>
-                    </div>
-                    <button type="button" class="remove-video text-red-600 hover:underline mt-2">Remove Video</button>
-                `;
-                videosContainer.appendChild(videoDiv);
-                videoIndex++;
-                updateRemoveButtons(videosContainer, 'remove-video');
-                updateButtonState();
-            });
-        }
-
-        function updateRemoveButtons(container, className) {
-            const buttons = container.querySelectorAll(`.${className}`);
-            buttons.forEach((button, index) => {
-                button.disabled = index === 0 && buttons.length === 1;
-                button.addEventListener('click', () => {
-                    button.closest('.flex, .topic, .video-segment').remove();
-                    updateButtonState();
-                });
-            });
-        }
-
-        // Form Validation and Button State
-        function updateButtonState() {
-            const requiredFields = document.querySelectorAll('input[required], textarea[required], select[required]');
-            const uploadButton = document.getElementById('uploadButton');
-            uploadButton.disabled = !Array.from(requiredFields).every(field => field.value);
-        }
-
-        // Form Submission with Loading State
-        document.getElementById('videoUploadForm').addEventListener('submit', function(e) {
-            const uploadButton = document.getElementById('uploadButton');
-            uploadButton.disabled = true;
-            uploadButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Uploading...';
-        });
-
-        // Initialize
-        document.querySelectorAll('.topic').forEach(addTopicListeners);
-        updateRemoveButtons(document.getElementById('learning-outcomes-container'), 'remove-outcome');
-        updateRemoveButtons(document.getElementById('topics-container'), 'remove-topic');
-        updateRemoveButtons(document.querySelector('.lessons-container'), 'remove-lesson');
-        updateRemoveButtons(document.querySelector('.videos-container'), 'remove-video');
-        document.querySelectorAll('input, textarea, select').forEach(field => {
-            field.addEventListener('input', updateButtonState);
-        });
-        updateButtonState();
     </script>
 </body>
 </html>

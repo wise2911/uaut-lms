@@ -9,12 +9,14 @@ use Illuminate\Http\Request;
 
 class UserHomeController extends Controller
 {
+   
     public function index(Request $request)
     {
         $user = Auth::user();
         
         // Get enrolled courses with progress (sorted by latest enrollment)
         $enrolledCourses = $user->courses()
+            ->with('videos')
             ->orderByPivot('created_at', 'desc')
             ->get();
         
@@ -22,6 +24,7 @@ class UserHomeController extends Controller
         $availableCourses = Course::whereDoesntHave('users', function($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
+            ->with('videos')
             ->when($request->department, function($query, $department) {
                 return $query->where('department', $department);
             })
@@ -40,20 +43,20 @@ class UserHomeController extends Controller
     }
 
     public function enroll(Request $request, $courseId)
-{
-    $user = Auth::user();
-    $course = Course::findOrFail($courseId);
+    {
+        $user = Auth::user();
+        $course = Course::findOrFail($courseId);
 
-    if ($user->courses()->where('course_id', $courseId)->exists()) {
+        if ($user->courses()->where('course_id', $courseId)->exists()) {
+            return redirect()->route('courses.show', $courseId)
+                   ->with('info', 'You are already enrolled in this course.');
+        }
+
+        $user->courses()->attach($courseId, ['progress' => 0]);
+
         return redirect()->route('courses.show', $courseId)
-               ->with('info', 'You are already enrolled in this course.');
+               ->with('success', 'Enrollment successful! You can now access all course materials.');
     }
-
-    $user->courses()->attach($courseId, ['progress' => 0]);
-
-    return redirect()->route('courses.show', $courseId)
-           ->with('success', 'Enrollment successful! You can now access all course materials.');
-}
 
     public function updateProgress(Request $request, $courseId)
     {
