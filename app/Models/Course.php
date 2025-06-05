@@ -6,15 +6,27 @@ use Illuminate\Database\Eloquent\Model;
 
 class Course extends Model
 {
-    protected $fillable = ['title', 'description', 'instructor_name', 'department', 'thumbnail', 'downloadable_file'];
+    protected $fillable = [
+        'title',
+        'description',
+        'instructor_name',
+        'department',
+        'short_description',
+        'thumbnail',
+    ];
 
-    public function videos()
+    public function users()
+    {
+        return $this->belongsToMany(User::class)->withPivot('progress');
+    }
+
+    public function video()
     {
         return $this->hasMany(Video::class);
     }
 
-    public function users()
+    public function ratings()
     {
-        return $this->belongsToMany(User::class, 'user_course')->withPivot('progress');
+        return $this->hasMany(CourseRating::class);
     }
 }

@@ -13,7 +13,7 @@ class VideoController extends Controller
 {
     public function index()
     {
-        $courses = Course::with('videos')->get();
+        $courses = Course::with('video')->get();
         return view('admin.videos.index', compact('courses'));
     }
 
@@ -31,10 +31,10 @@ class VideoController extends Controller
             'new_course.department' => 'required|in:COBA,COEIT',
             'new_course.instructor_name' => 'required|string|max:255',
             'new_course.thumbnail' => 'nullable|image|mimes:jpeg,png|max:2048',
-            'new_course.videos.preview.url' => 'required|string|max:255',
-            'new_course.videos.segments.*.title' => 'required|string|max:255',
-            'new_course.videos.segments.*.url' => 'required|string|max:255',
-            'new_course.videos.segments.*.order' => 'required|integer|min:1',
+            'new_course.video.preview.url' => 'required|string|max:255',
+            'new_course.video.segments.*.title' => 'required|string|max:255',
+            'new_course.video.segments.*.url' => 'required|string|max:255',
+            'new_course.video.segments.*.order' => 'required|integer|min:1',
         ]);
 
         // Handle thumbnail upload
@@ -52,15 +52,15 @@ class VideoController extends Controller
         ]);
 
         // Create the Preview Video
-        $previewVideo = $course->videos()->create([
+        $previewVideo = $course->video()->create([
             'title' => $course->title . ' Preview',
-            'url' => $validated['new_course']['videos']['preview']['url'],
+            'url' => $validated['new_course']['video']['preview']['url'],
             'is_preview' => true,
         ]);
 
         // Create Video Segments
-        if (isset($validated['new_course']['videos']['segments'])) {
-            foreach ($validated['new_course']['videos']['segments'] as $segmentData) {
+        if (isset($validated['new_course']['video']['segments'])) {
+            foreach ($validated['new_course']['video']['segments'] as $segmentData) {
                 $previewVideo->segments()->create([
                     'title' => $segmentData['title'],
                     'url' => $segmentData['url'],
@@ -100,8 +100,7 @@ class VideoController extends Controller
         ]);
 
         foreach ($request->file('segments') as $index => $segment) {
-            $path = $segment['video']->store('videos/html', 'public');
-
+            $path = $segment['video']->store('videos', 'public');
             Segment::create([
                 'video_id' => $video->id,
                 'title' => $request->input("segments.$index.title"),
@@ -123,12 +122,27 @@ class VideoController extends Controller
 
     public function destroy(Video $video)
     {
+        // Delete associated segments and their files
         foreach ($video->segments as $segment) {
             Storage::disk('public')->delete($segment->url);
             $segment->delete();
         }
+
+        // Get the associated course
+        $course = $video->course;
+
+        // Delete the video
         $video->delete();
 
-        return redirect()->route('admin.videos.index')->with('success', 'Video deleted successfully.');
+        // Delete the course and its thumbnail (if it exists)
+        if ($course) {
+            if ($course->thumbnail) {
+                Storage::disk('public')->delete($course->thumbnail);
+            }
+            $course->delete();
+        }
+
+        return redirect()->route('admin.videos.index')->with('success', 'Course and video deleted successfully.');
     }
 }
+?>

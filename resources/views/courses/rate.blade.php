@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | UAUT LMS</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Rate {{ $course->title }} | UAUT LMS</title>
     <link rel="shortcut icon" href="{{ url('img/uaut-logo.jpg') }}" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -21,8 +22,6 @@
         }
     </script>
     <style>
-        .course-card { transition: transform 0.3s, box-shadow 0.3s; }
-        .course-card:hover { transform: scale(1.05); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
         .animate-fade-in { animation: fadeIn 0.5s ease-in; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .sidebar { transition: transform 0.3s ease; }
@@ -63,7 +62,7 @@
         </div>
         <div class="p-4">
             <ul class="space-y-2">
-                <li><a href="{{ route('user.home') }}" class="flex items-center p-3 text-gray-700 bg-primary-50 rounded-lg"><i class="fas fa-home mr-3 text-primary-600"></i>Dashboard</a></li>
+                <li><a href="{{ route('user.home') }}" class="flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg"><i class="fas fa-home mr-3 text-primary-600"></i>Dashboard</a></li>
                 <li><a href="/courses" class="flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg"><i class="fas fa-book mr-3 text-primary-600"></i>All Courses</a></li>
                 <li><a href="#" class="flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg"><i class="fas fa-tasks mr-3 text-primary-600"></i>My Progress</a></li>
                 <li>
@@ -81,7 +80,10 @@
         <header class="bg-white shadow-sm sticky top-0 z-10">
             <nav class="container mx-auto px-6 py-4">
                 <div class="flex items-center justify-between">
-                    <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
+                    <div class="flex items-center space-x-4">
+                        <a href="{{ route('courses.show', $course->id) }}" class="text-gray-600 hover:text-gray-800"><i class="fas fa-arrow-left"></i></a>
+                        <h1 class="text-2xl font-bold text-gray-800">Rate {{ $course->title }}</h1>
+                    </div>
                     <div class="flex items-center space-x-4">
                         <span class="text-gray-700 hidden sm:inline">{{ Auth::user()->full_name }}</span>
                         <div class="bg-primary-100 p-2 rounded-full"><i class="fas fa-user text-primary-600"></i></div>
@@ -94,45 +96,37 @@
             @if (session('success'))
                 <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded animate-fade-in"><i class="fas fa-check-circle mr-2"></i>{{ session('success') }}</div>
             @endif
-            @if (session('info'))
-                <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded animate-fade-in"><i class="fas fa-info-circle mr-2"></i>{{ session('info') }}</div>
+            @if (session('error'))
+                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded animate-fade-in"><i class="fas fa-exclamation-circle mr-2"></i>{{ session('error') }}</div>
             @endif
 
-            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
-                <h1 class="text-3xl font-bold text-gray-800 mb-4">Welcome, {{ Auth::user()->full_name }}!</h1>
-                <p class="text-gray-600 mb-6">Explore your enrolled courses and continue your learning journey.</p>
-            </div>
-
-            <div class="mb-12">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">Your Courses</h2>
-                @if ($enrolledCourses->isEmpty())
-                    <div class="bg-white rounded-2xl shadow-lg p-6 text-center">
-                        <i class="fas fa-book text-gray-400 text-4xl mb-4"></i>
-                        <p class="text-gray-600">You haven't enrolled in any courses yet.</p>
-                        <a href="/courses" class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 mt-4">
-                            <i class="fas fa-book-open mr-2"></i> Explore Courses
-                        </a>
-                    </div>
-                @else
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        @foreach ($enrolledCourses as $course)
-                            <div class="course-card bg-white rounded-2xl shadow-md overflow-hidden">
-                                <img src="{{ $course->thumbnail ? asset('storage/' . $course->thumbnail) : asset('img/placeholder.jpg') }}" alt="{{ $course->title }}" class="w-full h-48 object-cover">
-                                <div class="p-5">
-                                    <h3 class="text-lg font-semibold text-gray-800 mb-2 line-clamp-2">{{ $course->title }}</h3>
-                                    <p class="text-gray-600 text-sm mb-3 line-clamp-3">{{ $course->short_description }}</p>
-                                    <p class="text-gray-500 text-xs mb-3">Progress: {{ $course->pivot->progress }}%</p>
-                                    <a href="{{ route('courses.learn', $course->id) }}" class="inline-flex items-center px-4 py-2 bg-accent text-white rounded-lg hover:bg-green-600 text-sm">
-                                        <i class="fas fa-play-circle mr-2"></i> Continue
-                                    </a>
+            <div class="bg-white rounded-2xl shadow-lg p-8">
+                <h1 class="text-3xl font-bold text-gray-800 mb-4">Course Feedback</h1>
+                <p class="text-gray-600 mb-6">Please provide your feedback for {{ $course->title }} by answering the following questions.</p>
+                <form method="POST" action="{{ route('courses.rate.store', $course->id) }}">
+                    @csrf
+                    @foreach ($questions as $index => $question)
+                        <div class="mb-6">
+                            <label class="block text-gray-700 font-semibold mb-2">{{ $index + 1 }}. {{ $question['text'] }}</label>
+                            @foreach ($question['options'] as $option)
+                                <div class="flex items-center mb-2">
+                                    <input type="radio" name="responses[{{ $index }}]" value="{{ $option }}" class="mr-2" required>
+                                    <label class="text-gray-600">{{ $option }}</label>
                                 </div>
-                            </div>
-                        @endforeach
+                            @endforeach
+                            @error("responses.{$index}")
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    @endforeach
+                    <div class="mb-6">
+                        <label for="feedback" class="block text-gray-700 font-semibold mb-2">Additional Feedback (Optional)</label>
+                        <textarea id="feedback" name="feedback" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" rows="5"></textarea>
                     </div>
-                    <div class="mt-8">
-                        {{ $enrolledCourses->links('vendor.pagination.tailwind') }}
-                    </div>
-                @endif
+                    <button type="submit" class="inline-flex items-center px-6 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700">
+                        <i class="fas fa-star mr-2"></i> Submit Feedback
+                    </button>
+                </form>
             </div>
         </main>
 

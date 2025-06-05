@@ -11,43 +11,41 @@ class User extends Authenticatable
 
     protected $fillable = [
         'full_name',
+        'name',
         'email',
         'password',
-        'profile_pic',
-        'role'
-    ];
-
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    protected $casts = [
-        'email_verified_at' => 'datetime',
     ];
 
     public function courses()
     {
-        return $this->belongsToMany(Course::class, 'user_course')
-                    ->withPivot('progress')
-                    ->withTimestamps();
+        return $this->belongsToMany(Course::class, 'course_user')->withPivot('progress');
     }
 
-    public function videoProgress()
+    public function segmentProgress()
     {
-        return $this->hasMany(UserVideoProgress::class);
+        return $this->hasMany(UserSegmentProgress::class);
     }
 
-    public function getEnrollmentDate($courseId)
+    public function completedSegments(Course $course)
     {
-        $enrollment = $this->courses()->where('course_id', $courseId)->first();
-        return $enrollment ? $enrollment->pivot->created_at->format('M d, Y') : null;
+        return $this->segmentProgress()
+            ->where('course_id', $course->id)
+            ->where('completed', true);
     }
 
-    public function updateCourseProgress($courseId, $progress)
+    public function calculateCourseProgress(Course $course)
     {
-        $this->courses()->updateExistingPivot($courseId, [
-            'progress' => min(100, max(0, $progress))
-        ]);
+        $course->load('video.segments');
+        $totalSegments = $course->video->flatMap->segments->count();
+        if ($totalSegments === 0) {
+            return 0;
+        }
+
+        $completedSegments = $this->completedSegments($course)->count();
+        $progress = ($completedSegments / $totalSegments) * 100;
+
+        $this->courses()->updateExistingPivot($course->id, ['progress' => round($progress, 2)]);
+
+        return round($progress, 2);
     }
 }

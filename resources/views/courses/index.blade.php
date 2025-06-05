@@ -95,7 +95,7 @@
     </div>
 
     <!-- Main Content -->
-    <div id="mainContent" class="ml-0 transition-all duration-300">
+    <div id="mainContent" class="ml-0 lg:ml-64 transition-all duration-300 flex flex-col min-h-screen">
         <header class="bg-white shadow-sm sticky top-0 z-10">
             <nav class="container mx-auto px-6 py-4">
                 <div class="flex items-center justify-between">
@@ -110,7 +110,7 @@
             </nav>
         </header>
 
-        <main class="container mx-auto px-6 py-8">
+        <main class="container mx-auto px-6 py-8 flex-grow">
             @if (session('success'))
                 <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded animate-fade-in">
                     <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
@@ -150,13 +150,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         @foreach ($courses as $course)
                             <div class="course-card bg-white rounded-2xl shadow-md overflow-hidden">
-                                @if ($course->thumbnail)
-                                    <img src="{{ url($course->thumbnail) }}" alt="{{ $course->title }}" class="w-full h-48 object-cover">
-                                @else
-                                    <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
-                                        <i class="fas fa-image text-gray-500 text-3xl"></i>
-                                    </div>
-                                @endif
+                                <img src="{{ $course->thumbnail ? asset('storage/' . $course->thumbnail) : asset('img/placeholder.jpg') }}" alt="{{ $course->title }}" class="w-full h-48 object-cover">
                                 <div class="p-5">
                                     <div class="flex justify-between items-start mb-2">
                                         <h3 class="text-lg font-semibold text-gray-800 line-clamp-2">{{ $course->title }}</h3>
@@ -177,6 +171,10 @@
                 @endif
             </div>
         </main>
+
+        <footer class="bg-white shadow-sm mt-auto">
+            <div class="container mx-auto px-6 py-4 text-center text-gray-600">© {{ date('Y') }} UAUT LMS. All rights reserved.</div>
+        </footer>
     </div>
 
     <script>
@@ -206,11 +204,6 @@
                     mainContent.classList.remove('ml-64');
                     mainContent.classList.add('ml-0');
                     sidebarToggle.classList.add('sidebar-toggle-collapsed');
-                } else {
-                    sidebar.classList.remove('sidebar-collapsed');
-                    mainContent.classList.add('ml-64');
-                    mainContent.classList.remove('ml-0');
-                    sidebarToggle.classList.remove('sidebar-toggle-collapsed');
                 }
             }
 

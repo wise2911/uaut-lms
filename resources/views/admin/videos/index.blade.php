@@ -48,6 +48,12 @@
                     </a>
                 </li>
                 <li>
+                    {{-- <a href="{{ route('admin.ratings') }}" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition-colors {{ Route::is('admin.ratings') ? 'bg-gray-700' : '' }}">
+                        <i class="fas fa-star mr-3"></i>
+                        <span>View Ratings</span>
+                    </a> --}}
+                </li>
+                <li>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="flex items-center p-2 w-full text-left rounded-lg hover:bg-gray-700 transition-colors">
@@ -108,14 +114,14 @@
                                 <tr class="border-t">
                                     <td class="px-4 py-3">{{ $course->title }}</td>
                                     <td class="px-4 py-3">{{ $course->department }}</td>
-                                    <td class="px-4 py-3">{{ $course->videos->count() }}</td>
+                                    <td class="px-4 py-3">{{ optional($course->video)->count() ?? 0 }}</td>
                                     <td class="px-4 py-3 flex space-x-2">
-                                        @if($course->videos->isNotEmpty())
-                                            @foreach($course->videos as $video)
+                                        @if($course->video && $course->video->isNotEmpty())
+                                            @foreach($course->video as $video)
                                                 <a href="{{ route('admin.videos.edit', $video) }}" class="text-blue-600 hover:text-blue-800" title="Edit {{ $video->title }}">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                <form action="{{ route('admin.videos.destroy', $video) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete {{ $video->title }}?');">
+                                                <form action="{{ route('admin.videos.destroy', $video) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete {{ $video->title }} and its associated course?');">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="text-red-600 hover:text-red-800" title="Delete {{ $video->title }}">
@@ -151,12 +157,12 @@
             tableBody.innerHTML = '';
             data.forEach(course => {
                 let actions = '';
-                if (course.videos.length > 0) {
-                    actions = course.videos.map(video => `
+                if (course.video && course.video.length > 0) {
+                    actions = course.video.map(video => `
                         <a href="/admin/videos/${video.id}/edit" class="text-blue-600 hover:text-blue-800" title="Edit ${video.title}">
                             <i class="fas fa-edit"></i>
                         </a>
-                        <form action="/admin/videos/${video.id}" method="POST" onsubmit="return confirm('Are you sure you want to delete ${video.title}?');">
+                        <form action="/admin/videos/${video.id}" method="POST" onsubmit="return confirm('Are you sure you want to delete ${video.title} and its associated course?');">
                             <input type="hidden" name="_token" value="{{ csrf_token() }}">
                             <input type="hidden" name="_method" value="DELETE">
                             <button type="submit" class="text-red-600 hover:text-red-800" title="Delete ${video.title}">
@@ -169,7 +175,7 @@
                     <tr class="border-t">
                         <td class="px-4 py-3">${course.title}</td>
                         <td class="px-4 py-3">${course.department}</td>
-                        <td class="px-4 py-3">${course.videos.length}</td>
+                        <td class="px-4 py-3">${course.video ? course.video.length : 0}</td>
                         <td class="px-4 py-3 flex space-x-2">${actions}</td>
                     </tr>
                 `;

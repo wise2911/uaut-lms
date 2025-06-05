@@ -22,8 +22,8 @@
         }
     </script>
     <style>
-        .course-card { transition: all 0.3s ease; }
-        .course-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+        .course-card { transition: transform 0.3s, box-shadow 0.3s; }
+        .course-card:hover { transform: scale(1.05); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
         .animate-fade-in { animation: fadeIn 0.5s ease-in; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .sidebar { transition: transform 0.3s ease; }
@@ -44,16 +44,22 @@
             width: 100%;
             height: 100%;
         }
-        .accordion-header { transition: background-color 0.3s ease; }
-        .accordion-header:hover { background-color: #f3f4f6; }
-        .progress-bar { transition: width 0.5s ease; }
-        .segment-active { background-color: #e0e7ff; }
-        .now-playing::after {
-            content: 'Now Playing';
-            @apply ml-2 bg-accent text-white text-xs px-2 py-1 rounded-full;
+        .progress-container { position: relative; }
+        .progress-tooltip {
+            display: none;
+            position: absolute;
+            background: #1f2937;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
         }
-        .video-controls { transition: opacity 0.3s ease; }
-        .video-controls:hover { opacity: 1; }
+        .progress-container:hover .progress-tooltip { display: block; }
+        .progress-bar { transition: width 0.5s ease-in-out; }
     </style>
 </head>
 <body class="bg-gray-50 font-sans antialiased">
@@ -82,37 +88,19 @@
                 </div>
                 <div class="ml-3">
                     <p class="text-sm font-medium text-gray-600">Welcome back</p>
-                    <p class="text-lg font-semibold text-gray-800">{{ Auth::user()->name }}</p>
+                    <p class="text-lg font-semibold text-gray-800">{{ Auth::user()->full_name }}</p>
                 </div>
             </div>
         </div>
         <div class="p-4">
             <ul class="space-y-2">
-                <li>
-                    <a href="{{ route('user.home') }}" class="flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg">
-                        <i class="fas fa-home mr-3 text-primary-600"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/courses" class="flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg">
-                        <i class="fas fa-book mr-3 text-primary-600"></i>
-                        <span>All Courses</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg">
-                        <i class="fas fa-tasks mr-3 text-primary-600"></i>
-                        <span>My Progress</span>
-                    </a>
-                </li>
+                <li><a href="{{ route('user.home') }}" class="flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg"><i class="fas fa-home mr-3 text-primary-600"></i>Dashboard</a></li>
+                <li><a href="/courses" class="flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg"><i class="fas fa-book mr-3 text-primary-600"></i>All Courses</a></li>
+                <li><a href="#" class="flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg"><i class="fas fa-tasks mr-3 text-primary-600"></i>My Progress</a></li>
                 <li>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="w-full flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg">
-                            <i class="fas fa-sign-out-alt mr-3 text-primary-600"></i>
-                            <span>Logout</span>
-                        </button>
+                        <button type="submit" class="w-full flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg"><i class="fas fa-sign-out-alt mr-3 text-primary-600"></i>Logout</button>
                     </form>
                 </li>
             </ul>
@@ -125,16 +113,12 @@
             <nav class="container mx-auto px-6 py-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-4">
-                        <a href="{{ route('courses.show', $course->id) }}" class="text-gray-600 hover:text-gray-800">
-                            <i class="fas fa-arrow-left"></i>
-                        </a>
+                        <a href="{{ route('courses.show', $course->id) }}" class="text-gray-600 hover:text-gray-800"><i class="fas fa-arrow-left"></i></a>
                         <h1 class="text-2xl font-bold text-gray-800">{{ $course->title }}</h1>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <span class="text-gray-700 hidden sm:inline">{{ Auth::user()->name }}</span>
-                        <div class="bg-primary-100 p-2 rounded-full">
-                            <i class="fas fa-user text-primary-600"></i>
-                        </div>
+                        <span class="text-gray-700 hidden sm:inline">{{ Auth::user()->full_name }}</span>
+                        <div class="bg-primary-100 p-2 rounded-full"><i class="fas fa-user text-primary-600"></i></div>
                     </div>
                 </div>
             </nav>
@@ -142,168 +126,141 @@
 
         <main class="container mx-auto px-6 py-8 flex-grow">
             @if (session('success'))
-                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded animate-fade-in">
-                    <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
-                </div>
+                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded animate-fade-in"><i class="fas fa-check-circle mr-2"></i>{{ session('success') }}</div>
             @endif
             @if (session('info'))
-                <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded animate-fade-in">
-                    <i class="fas fa-info-circle mr-2"></i>{{ session('info') }}
-                </div>
+                <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded animate-fade-in"><i class="fas fa-info-circle mr-2"></i>{{ session('info') }}</div>
+            @endif
+            @if (session('error'))
+                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded animate-fade-in"><i class="fas fa-exclamation-circle mr-2"></i>{{ session('error') }}</div>
             @endif
 
-            <!-- Define $firstVideo and $firstSegment -->
-            @php
-                $allVideosWithSegments = $course->videos->filter(function ($video) {
-                    return $video->segments->isNotEmpty();
-                })->sortBy('id');
-                $firstVideo = $allVideosWithSegments->first();
-                $firstSegment = $firstVideo && $firstVideo->segments->isNotEmpty() ? $firstVideo->segments->sortBy('order')->first() : null;
-            @endphp
-
-            <!-- Progress and Course Info -->
+            <!-- Course Header -->
             <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
                 <h1 class="text-3xl font-bold text-gray-800 mb-4">{{ $course->title }}</h1>
-                <div class="flex items-center mb-4">
-                    @php
-                        $userProgress = Auth::user()->courses()->where('course_id', $course->id)->first()->pivot->progress ?? 0;
-                    @endphp
-                    <p class="text-gray-600 mr-4">Progress: <span id="progress-text">{{ $userProgress }}%</span></p>
-                    <div class="w-full bg-gray-200 rounded-full h-2.5">
-                        <div id="progress-bar" class="bg-primary h-2.5 rounded-full progress-bar" style="width: {{ $userProgress }}%"></div>
+                <div class="flex flex-col sm:flex-row items-start sm:items-center mb-4 space-y-4 sm:space-y-0 sm:space-x-4">
+                    <div class="progress-container w-full sm:w-3/4">
+                        @php
+                            $totalSegments = $course->video->flatMap->segments->count();
+                            $completedCount = Auth::user()->completedSegments($course)->count();
+                        @endphp
+                        <p class="text-gray-600 mb-2">Progress: <span id="progress-text">{{ $userProgress }}%</span> (<span id="segment-count">{{ $completedCount }}/{{ $totalSegments }}</span> segments completed)</p>
+                        <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                            <div id="progress-bar" class="bg-gradient-to-r from-primary to-accent h-3 rounded-full progress-bar" style="width: {{ $userProgress }}%" data-tooltip="{{ $completedCount }} of {{ $totalSegments }} segments completed"></div>
+                        </div>
+                        <span class="progress-tooltip">{{ $completedCount }} of {{ $totalSegments }} segments completed</span>
+                    </div>
+                    <div class="flex space-x-4">
+                        <button id="progress-details" class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700"><i class="fas fa-info-circle mr-2"></i>View Progress Details</button>
+                        @if ($userProgress >= 100)
+                            <a href="{{ route('courses.certificate', $course->id) }}" class="inline-flex items-center px-4 py-2 bg-accent text-white rounded-lg hover:bg-green-600"><i class="fas fa-certificate mr-2"></i>Download Certificate</a>
+                            @if (!\App\Models\CourseRating::where('user_id', Auth::id())->where('course_id', $course->id)->exists())
+                                <a href="{{ route('courses.rate', $course->id) }}" class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"><i class="fas fa-star mr-2"></i>Rate Course</a>
+                            @endif
+                        @endif
                     </div>
                 </div>
-                <p class="text-gray-500">Instructor: {{ $course->instructor_name }} | Department: {{ $course->department }}</p>
+                <p class="text-gray-500">Instructor: {{ $course->instructor_name }} | Department: {{ $course->department ?? 'N/A' }}</p>
             </div>
 
-            <!-- Course Content -->
-            <div class="flex flex-col lg:flex-row gap-6">
-                <!-- Video Player and Segments -->
-                <div class="lg:w-3/4">
-                    @if (!$firstVideo || !$firstSegment)
-                        <div class="bg-white rounded-2xl shadow-lg p-6 text-center">
-                            <i class="fas fa-video text-gray-400 text-4xl mb-4"></i>
-                            <p class="text-gray-600">No videos with segments available. Please check the course content.</p>
-                        </div>
-                    @else
-                        <div class="course-card bg-white rounded-2xl shadow-lg p-6 mb-6">
-                            <div class="video-container rounded-lg overflow-hidden shadow-md mb-4">
-                                <video id="main-video" controls autoplay class="w-full" data-video-id="{{ $firstVideo->id }}" data-segment-id="{{ $firstSegment->id }}">
-                                    <source src="{{ url($firstSegment->url) }}" type="video/mp4">
-                                    Your browser does not support the video tag.
-                                </video>
-                            </div>
-                            <h3 class="text-xl font-semibold text-gray-800 mb-2" id="video-title">{{ $firstSegment->title }}</h3>
-                            <div class="flex items-center space-x-4">
-                                <button class="mark-watched inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700" data-video-id="{{ $firstVideo->id }}" data-course-id="{{ $course->id }}">
-                                    <i class="fas fa-check mr-2"></i> Mark as Watched
+            <!-- Video Content -->
+            <div class="mb-12">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Course Content</h2>
+                <div class="flex flex-col lg:flex-row gap-6">
+                    <!-- Video Player -->
+                    <div class="lg:w-3/4">
+                        <div class="course-card bg-white rounded-2xl shadow-lg p-6">
+                            @php
+                                $currentSegment = $course->video->flatMap->segments->sortBy('order')->first();
+                                if (request()->has('segment_id')) {
+                                    $currentSegment = \App\Models\Segment::find(request('segment_id'));
+                                }
+                                $isCompleted = $currentSegment ? Auth::user()->segmentProgress()->where('segment_id', $currentSegment->id)->where('completed', true)->exists() : false;
+                            @endphp
+                            @if ($currentSegment && $currentSegment->url)
+                                <div class="video-container rounded-lg overflow-hidden shadow-md mb-4">
+                                    <video id="course-video" controls>
+                                        <source src="{{ url($currentSegment->url) }}" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-800 mb-2">{{ $currentSegment->title }} (Segment {{ $currentSegment->order }})</h3>
+                                <button id="mark-watched" style="display: none;" class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 {{ $isCompleted ? 'opacity-50 cursor-not-allowed' : '' }}" data-video-id="{{ $currentSegment->video_id }}" data-segment-id="{{ $currentSegment->id }}" {{ $isCompleted ? 'disabled' : '' }}>
+                                    <i class="fas fa-check-circle mr-2"></i>{{ $isCompleted ? 'Completed' : 'Mark as Watched' }}
                                 </button>
-                                <button id="next-video" class="inline-flex items-center px-4 py-2 bg-accent text-white rounded-lg hover:bg-green-600">
-                                    <i class="fas fa-forward mr-2"></i> Next Video
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Segments Accordion -->
-                        @foreach ($allVideosWithSegments as $video)
-                            @if ($video->segments->isNotEmpty())
-                                <div class="course-card bg-white rounded-2xl shadow-lg mb-4">
-                                    <div class="accordion-header p-4 flex justify-between items-center cursor-pointer" data-video-id="{{ $video->id }}">
-                                        <h3 class="text-lg font-medium text-gray-800">{{ $video->title }}</h3>
-                                        <i class="fas fa-chevron-down text-gray-600"></i>
-                                    </div>
-                                    <div class="accordion-content {{ $video->id == $firstVideo->id ? '' : 'hidden' }} p-4">
-                                        <h4 class="text-md font-semibold text-gray-800 mb-2">Video Segments</h4>
-                                        <ul class="space-y-2">
-                                            @foreach ($video->segments->sortBy('order') as $segment)
-                                                <li>
-                                                    <button class="segment-link text-primary hover:underline w-full text-left flex items-center {{ $segment->id == $firstSegment->id ? 'segment-active now-playing' : '' }}" data-url="{{ url($segment->url) }}" data-title="{{ $segment->title }}" data-video-id="{{ $video->id }}" data-segment-id="{{ $segment->id }}">
-                                                        <i class="fas fa-play-circle mr-2"></i>
-                                                        {{ $segment->title }} (Segment {{ $segment->order }})
-                                                    </button>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                        <button class="mark-watched inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 mt-4" data-video-id="{{ $video->id }}" data-course-id="{{ $course->id }}">
-                                            <i class="fas fa-check mr-2"></i> Mark as Watched
-                                        </button>
-                                    </div>
+                            @else
+                                <div class="bg-gray-200 rounded-lg p-6 text-center">
+                                    <i class="fas fa-video text-gray-400 text-4xl mb-4"></i>
+                                    <p class="text-gray-600">No segments available for this course.</p>
                                 </div>
                             @endif
-                        @endforeach
-                    @endif
-                </div>
-
-                <!-- Course Navigation Sidebar -->
-                <div class="lg:w-1/4 bg-white rounded-2xl shadow-lg p-6 sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Course Content</h3>
-                    <ul class="space-y-2">
-                        @foreach ($allVideosWithSegments as $index => $video)
-                            @if ($video->segments->isNotEmpty())
+                        </div>
+                        <!-- Navigation Buttons -->
+                        @if ($currentSegment)
+                            <div class="flex justify-between mt-4">
                                 @php
-                                    $hasActiveSegment = $video->id == $firstVideo->id;
+                                    $prevSegment = $course->video->flatMap->segments->sortBy('order')->where('order', '<', $currentSegment->order)->last();
+                                    $nextSegment = $course->video->flatMap->segments->sortBy('order')->where('order', '>', $currentSegment->order)->first();
                                 @endphp
-                                <li>
-                                    <button class="video-nav w-full text-left flex items-center p-2 hover:bg-primary-50 rounded-lg {{ $hasActiveSegment ? 'bg-primary-100 text-primary-800' : 'text-gray-700' }}" data-video-id="{{ $video->id }}">
-                                        <i class="fas fa-video mr-2"></i>
-                                        <span class="line-clamp-1">{{ $video->title }}</span>
-                                    </button>
-                                </li>
+                                <a href="{{ $prevSegment ? route('courses.learn', [$course->id, 'segment_id' => $prevSegment->id]) : '#' }}" class="inline-flex items-center px-4 py-2 bg-gray-300 text-gray-700 rounded-lg {{ $prevSegment ? 'hover:bg-gray-400' : 'opacity-50 cursor-not-allowed' }}" {{ !$prevSegment ? 'disabled' : '' }}>
+                                    <i class="fas fa-arrow-left mr-2"></i>Previous
+                                </a>
+                                <a href="{{ $nextSegment ? route('courses.learn', [$course->id, 'segment_id' => $nextSegment->id]) : '#' }}" class="inline-flex items-center px-4 py-2 bg-gray-300 text-gray-700 rounded-lg {{ $nextSegment ? 'hover:bg-gray-400' : 'opacity-50 cursor-not-allowed' }}" {{ !$nextSegment ? 'disabled' : '' }}>
+                                    Next<i class="fas fa-arrow-right ml-2"></i>
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+                    <!-- Segment List -->
+                    <div class="lg:w-1/4">
+                        <div class="bg-white rounded-2xl shadow-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Course Segments</h3>
+                            @if ($course->video->isEmpty())
+                                <p class="text-gray-600">No videos available.</p>
+                            @else
+                                <ul class="space-y-2">
+                                    @foreach ($course->video as $video)
+                                        @foreach ($video->segments->sortBy('order') as $segment)
+                                            @php
+                                                $isSegmentCompleted = Auth::user()->segmentProgress()->where('segment_id', $segment->id)->where('completed', true)->exists();
+                                            @endphp
+                                            <li>
+                                                <a href="{{ route('courses.learn', [$course->id, 'segment_id' => $segment->id]) }}" class="flex items-center p-2 text-gray-700 hover:bg-primary-50 rounded-lg {{ $currentSegment && $currentSegment->id == $segment->id ? 'bg-primary-50' : '' }}">
+                                                    <i class="fas fa-play-circle mr-2 {{ $isSegmentCompleted ? 'text-accent' : 'text-gray-500' }}"></i>
+                                                    <span class="text-sm">{{ $segment->title }} (Segment {{ $segment->order }})</span>
+                                                </a>
+                                            </li>
+                                        @endforeach
+                                    @endforeach
+                                </ul>
                             @endif
-                        @endforeach
-                    </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
 
         <footer class="bg-white shadow-sm mt-auto">
-            <div class="container mx-auto px-6 py-4 text-center text-gray-600">
-                © {{ date('Y') }} UAUT LMS. All rights reserved.
-            </div>
+            <div class="container mx-auto px-6 py-4 text-center text-gray-600">© {{ date('Y') }} UAUT LMS. All rights reserved.</div>
         </footer>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const sidebarToggle = document.getElementById('sidebarToggle');
-            const closeSidebar = document.getElementById('closeSidebar');
-            const mainContent = document.getElementById('mainContent');
-            const videoPlayer = document.getElementById('main-video');
-            const videoTitle = document.getElementById('video-title');
-            const markWatchedButtons = document.querySelectorAll('.mark-watched');
-            const accordionHeaders = document.querySelectorAll('.accordion-header');
-            const segmentLinks = document.querySelectorAll('.segment-link');
-            const videoNavs = document.querySelectorAll('.video-nav');
-            const nextVideoButton = document.getElementById('next-video');
-            const progressBar = document.getElementById('progress-bar');
-            const progressText = document.getElementById('progress-text');
+        document.addEventListener('DOMContentLoaded', () => {
+            // Sidebar Toggle
+            const sidebar = document.querySelector('#sidebar');
+            const sidebarToggle = document.querySelector('#sidebarToggle');
+            const closeSidebar = document.querySelector('#closeSidebar');
+            const mainContent = document.querySelector('#mainContent');
 
-            // Flatten all segments for sequential playback
-            const allSegments = [
-                @foreach ($allVideosWithSegments as $video)
-                    @foreach ($video->segments->sortBy('order') as $segment)
-                        {
-                            videoId: '{{ $video->id }}',
-                            segmentId: '{{ $segment->id }}',
-                            url: '{{ url($segment->url) }}',
-                            title: '{{ $segment->title }}',
-                            segmentOrder: {{ $segment->order }},
-                            videoOrder: {{ $video->id }}
-                        },
-                    @endforeach
-                @endforeach
-            ].sort((a, b) => a.videoOrder - b.videoOrder || a.segmentOrder - b.segmentOrder);
-
-            // Sidebar toggle
-            sidebarToggle.addEventListener('click', function() {
+            sidebarToggle.addEventListener('click', () => {
                 sidebar.classList.toggle('sidebar-collapsed');
                 mainContent.classList.toggle('ml-64');
                 mainContent.classList.toggle('ml-0');
                 sidebarToggle.classList.toggle('sidebar-toggle-collapsed');
             });
 
-            closeSidebar.addEventListener('click', function() {
+            closeSidebar.addEventListener('click', () => {
                 sidebar.classList.add('sidebar-collapsed');
                 mainContent.classList.remove('ml-64');
                 mainContent.classList.add('ml-0');
@@ -316,194 +273,74 @@
                     mainContent.classList.remove('ml-64');
                     mainContent.classList.add('ml-0');
                     sidebarToggle.classList.add('sidebar-toggle-collapsed');
-                } else {
-                    mainContent.classList.add('ml-64');
-                    mainContent.classList.remove('ml-0');
-                    sidebarToggle.classList.remove('sidebar-toggle-collapsed');
                 }
             }
 
             checkScreenSize();
             window.addEventListener('resize', checkScreenSize);
 
-            // Accordion functionality
-            accordionHeaders.forEach(header => {
-                header.addEventListener('click', function() {
-                    const content = this.nextElementSibling;
-                    content.classList.toggle('hidden');
-                    const icon = this.querySelector('i');
-                    icon.classList.toggle('fa-chevron-down');
-                    icon.classList.toggle('fa-chevron-up');
-                });
-            });
+            // Mark as Watched
+            const markWatchedButton = document.querySelector('#mark-watched');
+            if (markWatchedButton && !markWatchedButton.disabled) {
+                markWatchedButton.addEventListener('click', () => {
+                    const videoId = markWatchedButton.dataset.videoId;
+                    const segmentId = markWatchedButton.dataset.segmentId;
 
-            // Segment video switching
-            segmentLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    const url = this.getAttribute('data-url');
-                    const title = this.getAttribute('data-title');
-                    const videoId = this.getAttribute('data-video-id');
-                    const segmentId = this.getAttribute('data-segment-id');
-                    videoPlayer.src = videoPlayer.querySelector('source').src = url;
-                    videoPlayer.setAttribute('data-video-id', videoId);
-                    videoPlayer.setAttribute('data-segment-id', segmentId);
-                    videoTitle.textContent = title;
-                    videoPlayer.play();
+                    fetch(`/courses/{{ $course->id }}/mark-watched`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+                        },
+                        body: JSON.stringify({ video_id: videoId, segment_id: segmentId }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            markWatchedButton.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Completed';
+                            markWatchedButton.classList.add('opacity-50', 'cursor-not-allowed');
+                            markWatchedButton.disabled = true;
 
-                    // Update active states
-                    segmentLinks.forEach(l => l.classList.remove('segment-active', 'now-playing'));
-                    this.classList.add('segment-active', 'now-playing');
-                    videoNavs.forEach(nav => nav.classList.remove('bg-primary-100', 'text-primary-800'));
-                    document.querySelector(`.video-nav[data-video-id="${videoId}"]`)?.classList.add('bg-primary-100', 'text-primary-800');
+                            const progressBar = document.querySelector('#progress-bar');
+                            const progressText = document.querySelector('#progress-text');
+                            const segmentCount = document.querySelector('#segment-count');
+                            progressBar.style.width = `${data.progress}%`;
+                            progressText.textContent = `${data.progress}%`;
+                            segmentCount.textContent = `${data.completedCount}/${{{ $totalSegments }}}`;
 
-                    // Open accordion if closed
-                    const accordionContent = this.closest('.accordion-content');
-                    if (accordionContent.classList.contains('hidden')) {
-                        this.closest('.course-card').querySelector('.accordion-header').click();
-                    }
-                });
-            });
-
-            // Video navigation
-            videoNavs.forEach(nav => {
-                nav.addEventListener('click', function() {
-                    const videoId = this.getAttribute('data-video-id');
-                    const firstSegment = allSegments.find(segment => segment.videoId === videoId);
-                    if (firstSegment) {
-                        videoPlayer.src = videoPlayer.querySelector('source').src = firstSegment.url;
-                        videoPlayer.setAttribute('data-video-id', firstSegment.videoId);
-                        videoPlayer.setAttribute('data-segment-id', firstSegment.segmentId);
-                        videoTitle.textContent = firstSegment.title;
-                        videoPlayer.play();
-
-                        // Update active states
-                        segmentLinks.forEach(l => l.classList.remove('segment-active', 'now-playing'));
-                        const segmentLink = document.querySelector(`.segment-link[data-segment-id="${firstSegment.segmentId}"]`);
-                        segmentLink?.classList.add('segment-active', 'now-playing');
-                        videoNavs.forEach(n => n.classList.remove('bg-primary-100', 'text-primary-800'));
-                        this.classList.add('bg-primary-100', 'text-primary-800');
-
-                        // Open accordion
-                        const accordionHeader = document.querySelector(`.accordion-header[data-video-id="${videoId}"]`);
-                        if (accordionHeader.nextElementSibling.classList.contains('hidden')) {
-                            accordionHeader.click();
+                            if (data.progress >= 100) {
+                                const actionsDiv = document.querySelector('.flex.space-x-4');
+                                actionsDiv.insertAdjacentHTML('beforeend', `
+                                    <a href="{{ route('courses.certificate', $course->id) }}" class="inline-flex items-center px-4 py-2 bg-accent text-white rounded-lg hover:bg-green-600">
+                                        <i class="fas fa-certificate mr-2"></i>Download Certificate
+                                    </a>
+                                    @if (!\App\Models\CourseRating::where('user_id', Auth::id())->where('course_id', $course->id)->exists())
+                                        <a href="{{ route('courses.rate', $course->id) }}" class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">
+                                            <i class="fas fa-star mr-2"></i>Rate Course
+                                        </a>
+                                    @endif
+                                `);
+                            }
+                        } else {
+                            alert(data.message || 'Failed to mark segment as watched.');
                         }
-                    }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred. Please try again.');
+                    });
                 });
-            });
 
-            // Auto-play next video
-            videoPlayer.addEventListener('ended', function() {
-                const currentVideoId = videoPlayer.getAttribute('data-video-id');
-                const currentSegmentId = videoPlayer.getAttribute('data-segment-id');
-                const currentIndex = allSegments.findIndex(segment => 
-                    segment.videoId === currentVideoId && segment.segmentId === currentSegmentId
-                );
-                const nextSegment = allSegments[currentIndex + 1];
-
-                if (nextSegment) {
-                    videoPlayer.src = videoPlayer.querySelector('source').src = nextSegment.url;
-                    videoPlayer.setAttribute('data-video-id', nextSegment.videoId);
-                    videoPlayer.setAttribute('data-segment-id', nextSegment.segmentId);
-                    videoTitle.textContent = nextSegment.title;
-                    videoPlayer.play();
-
-                    // Update active states
-                    segmentLinks.forEach(l => l.classList.remove('segment-active', 'now-playing'));
-                    const segmentLink = document.querySelector(`.segment-link[data-segment-id="${nextSegment.segmentId}"]`);
-                    segmentLink?.classList.add('segment-active', 'now-playing');
-                    videoNavs.forEach(n => n.classList.remove('bg-primary-100', 'text-primary-800'));
-                    document.querySelector(`.video-nav[data-video-id="${nextSegment.videoId}"]`)?.classList.add('bg-primary-100', 'text-primary-800');
-
-                    // Open accordion
-                    const accordionHeader = document.querySelector(`.accordion-header[data-video-id="${nextSegment.videoId}"]`);
-                    if (accordionHeader.nextElementSibling.classList.contains('hidden')) {
-                        accordionHeader.click();
-                    }
-
-                    // Mark current video as watched
-                    markVideoWatched(currentVideoId);
-                } else {
-                    alert('You have completed all videos in this course!');
+                // Auto-mark if video watched >80%
+                const video = document.querySelector('#course-video');
+                if (video) {
+                    video.addEventListener('timeupdate', () => {
+                        if (video.currentTime / video.duration >= 0.8 && !markWatchedButton.disabled) {
+                            markWatchedButton.click();
+                        }
+                    });
                 }
-            });
-
-            // Next video button
-            nextVideoButton.addEventListener('click', function() {
-                const currentVideoId = videoPlayer.getAttribute('data-video-id');
-                const currentSegmentId = videoPlayer.getAttribute('data-segment-id');
-                const currentIndex = allSegments.findIndex(segment => 
-                    segment.videoId === currentVideoId && segment.segmentId === currentSegmentId
-                );
-                const nextSegment = allSegments[currentIndex + 1];
-
-                if (nextSegment) {
-                    videoPlayer.src = videoPlayer.querySelector('source').src = nextSegment.url;
-                    videoPlayer.setAttribute('data-video-id', nextSegment.videoId);
-                    videoPlayer.setAttribute('data-segment-id', nextSegment.segmentId);
-                    videoTitle.textContent = nextSegment.title;
-                    videoPlayer.play();
-
-                    // Update active states
-                    segmentLinks.forEach(l => l.classList.remove('segment-active', 'now-playing'));
-                    const segmentLink = document.querySelector(`.segment-link[data-segment-id="${nextSegment.segmentId}"]`);
-                    segmentLink?.classList.add('segment-active', 'now-playing');
-                    videoNavs.forEach(n => n.classList.remove('bg-primary-100', 'text-primary-800'));
-                    document.querySelector(`.video-nav[data-video-id="${nextSegment.videoId}"]`)?.classList.add('bg-primary-100', 'text-primary-800');
-
-                    // Open accordion
-                    const accordionHeader = document.querySelector(`.accordion-header[data-video-id="${nextSegment.videoId}"]`);
-                    if (accordionHeader.nextElementSibling.classList.contains('hidden')) {
-                        accordionHeader.click();
-                    }
-
-                    // Mark current video as watched
-                    markVideoWatched(currentVideoId);
-                } else {
-                    alert('No more videos to play!');
-                }
-            });
-
-            // Mark as watched
-            function markVideoWatched(videoId) {
-                const courseId = markWatchedButtons[0].getAttribute('data-course-id');
-                const token = document.querySelector('meta[name="csrf-token"]').content;
-
-                fetch(`/courses/${courseId}/mark-watched`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': token,
-                    },
-                    body: JSON.stringify({ video_id: videoId }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        progressBar.style.width = `${data.progress}%`;
-                        progressText.textContent = `${data.progress}%`;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
             }
-
-            markWatchedButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const videoId = this.getAttribute('data-video-id');
-                    markVideoWatched(videoId);
-                    alert('Video marked as watched!');
-                });
-            });
-
-            // Auto-mark watched after 80% playback
-            videoPlayer.addEventListener('timeupdate', function() {
-                if (videoPlayer.duration && videoPlayer.currentTime / videoPlayer.duration > 0.8) {
-                    const videoId = videoPlayer.getAttribute('data-video-id');
-                    markVideoWatched(videoId);
-                }
-            });
         });
     </script>
 </body>

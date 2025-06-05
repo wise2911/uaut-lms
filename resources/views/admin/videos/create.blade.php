@@ -102,7 +102,8 @@
                             @enderror
                         </div>
                         <div class="mb-4">
-                            <label for="thumbnail" class="block text-gray-700 font-medium mb-2">Thumbnail</label>
+                            <label for="thumbnail" class="block text-gray-7
+00 font-medium mb-2">Thumbnail</label>
                             <input type="file" name="new_course[thumbnail]" id="thumbnail" accept="image/jpeg,image/png" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-indigo-700 @error('new_course.thumbnail') border-red-500 @enderror">
                             @error('new_course.thumbnail')
                                 <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -114,9 +115,9 @@
                         <h2 class="text-xl font-bold text-gray-800 mb-4">Video Content</h2>
                         <div class="mb-4">
                             <label for="preview_url" class="block text-gray-700 font-medium mb-2">Preview Video URL</label>
-                            <input type="text" name="new_course[videos][preview][url]" id="preview_url" value="{{ old('new_course.videos.preview.url') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary @error('new_course.videos.preview.url') border-red-500 @enderror" placeholder="e.g., videos/html/preview.mp4" required>
+                            <input type="text" name="new_course[video][preview][url]" id="preview_url" value="{{ old('new_course.video.preview.url') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary @error('new_course.video.preview.url') border-red-500 @enderror" placeholder="e.g., videos/html/preview.mp4" required>
                             <p class="text-gray-500 text-sm mt-1">Enter path relative to public/, e.g., videos/html/preview.mp4</p>
-                            @error('new_course.videos.preview.url')
+                            @error('new_course.video.preview.url')
                                 <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
@@ -125,23 +126,23 @@
                             <div class="segment mb-4 p-4 border border-gray-200 rounded-lg">
                                 <div class="mb-2">
                                     <label for="segment_title_0" class="block text-gray-700 font-medium">Title</label>
-                                    <input type="text" name="new_course[videos][segments][0][title]" id="segment_title_0" value="{{ old('new_course.videos.segments.0.title') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary @error('new_course.videos.segments.0.title') border-red-500 @enderror" required>
-                                    @error('new_course.videos.segments.0.title')
+                                    <input type="text" name="new_course[video][segments][0][title]" id="segment_title_0" value="{{ old('new_course.video.segments.0.title') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary @error('new_course.video.segments.0.title') border-red-500 @enderror" required>
+                                    @error('new_course.video.segments.0.title')
                                         <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                                     @enderror
                                 </div>
                                 <div class="mb-2">
                                     <label for="segment_url_0" class="block text-gray-700 font-medium">Video URL</label>
-                                    <input type="text" name="new_course[videos][segments][0][url]" id="segment_url_0" value="{{ old('new_course.videos.segments.0.url') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary @error('new_course.videos.segments.0.url') border-red-500 @enderror" placeholder="e.g., videos/html/lesson1.mp4" required>
+                                    <input type="text" name="new_course[video][segments][0][url]" id="segment_url_0" value="{{ old('new_course.video.segments.0.url') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary @error('new_course.video.segments.0.url') border-red-500 @enderror" placeholder="e.g., videos/html/lesson1.mp4" required>
                                     <p class="text-gray-500 text-sm mt-1">Enter path relative to public/, e.g., videos/html/lesson1.mp4</p>
-                                    @error('new_course.videos.segments.0.url')
+                                    @error('new_course.video.segments.0.url')
                                         <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                                     @enderror
                                 </div>
                                 <div class="mb-2">
                                     <label for="segment_order_0" class="block text-gray-700 font-medium">Order</label>
-                                    <input type="number" name="new_course[videos][segments][0][order]" id="segment_order_0" value="{{ old('new_course.videos.segments.0.order') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary @error('new_course.videos.segments.0.order') border-red-500 @enderror" min="1" required>
-                                    @error('new_course.videos.segments.0.order')
+                                    <input type="number" name="new_course[video][segments][0][order]" id="segment_order_0" value="{{ old('new_course.video.segments.0.order') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary @error('new_course.video.segments.0.order') border-red-500 @enderror" min="1" required>
+                                    @error('new_course.video.segments.0.order')
                                         <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                                     @enderror
                                 </div>
@@ -176,16 +177,16 @@
                     </button>
                     <div class="mb-2">
                         <label for="segment_title_${segmentCount}" class="block text-gray-700 font-medium">Title</label>
-                        <input type="text" name="new_course[videos][segments][${segmentCount}][title]" id="segment_title_${segmentCount}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" required>
+                        <input type="text" name="new_course[video][segments][${segmentCount}][title]" id="segment_title_${segmentCount}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" required>
                     </div>
                     <div class="mb-2">
                         <label for="segment_url_${segmentCount}" class="block text-gray-700 font-medium">Video URL</label>
-                        <input type="text" name="new_course[videos][segments][${segmentCount}][url]" id="segment_url_${segmentCount}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g., videos/html/lesson${segmentCount + 1}.mp4" required>
+                        <input type="text" name="new_course[video][segments][${segmentCount}][url]" id="segment_url_${segmentCount}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g., videos/html/lesson${segmentCount + 1}.mp4" required>
                         <p class="text-gray-500 text-sm mt-1">Enter path relative to public/, e.g., videos/html/lesson${segmentCount + 1}.mp4</p>
                     </div>
                     <div class="mb-2">
                         <label for="segment_order_${segmentCount}" class="block text-gray-700 font-medium">Order</label>
-                        <input type="number" name="new_course[videos][segments][${segmentCount}][order]" id="segment_order_${segmentCount}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" min="1" required>
+                        <input type="number" name="new_course[video][segments][${segmentCount}][order]" id="segment_order_${segmentCount}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary" min="1" required>
                     </div>
                 </div>
             `;

@@ -22,7 +22,7 @@
     </script>
     <style>
         .course-card { transition: transform 0.3s, box-shadow 0.3s; }
-        .course-card:hover { transform: scale(1.02); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+        .course-card:hover { transform: scale(1.05); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
         .animate-fade-in { animation: fadeIn 0.5s ease-in; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .sidebar { transition: transform 0.3s ease; }
@@ -34,6 +34,7 @@
             padding-bottom: 56.25%;
             height: 0;
             overflow: hidden;
+            background: #000;
         }
         .video-container video {
             position: absolute;
@@ -70,37 +71,19 @@
                 </div>
                 <div class="ml-3">
                     <p class="text-sm font-medium text-gray-600">Welcome back</p>
-                    <p class="text-lg font-semibold text-gray-800">{{ Auth::user()->name }}</p>
+                    <p class="text-lg font-semibold text-gray-800">{{ Auth::user()->full_name }}</p>
                 </div>
             </div>
         </div>
         <div class="p-4">
             <ul class="space-y-2">
-                <li>
-                    <a href="{{ route('user.home') }}" class="flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg">
-                        <i class="fas fa-home mr-3 text-primary-600"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/courses" class="flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg">
-                        <i class="fas fa-book mr-3 text-primary-600"></i>
-                        <span>All Courses</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg">
-                        <i class="fas fa-tasks mr-3 text-primary-600"></i>
-                        <span>My Progress</span>
-                    </a>
-                </li>
+                <li><a href="{{ route('user.home') }}" class="flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg"><i class="fas fa-home mr-3 text-primary-600"></i>Dashboard</a></li>
+                <li><a href="/courses" class="flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg"><i class="fas fa-book mr-3 text-primary-600"></i>All Courses</a></li>
+                <li><a href="#" class="flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg"><i class="fas fa-tasks mr-3 text-primary-600"></i>My Progress</a></li>
                 <li>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="w-full flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg">
-                            <i class="fas fa-sign-out-alt mr-3 text-primary-600"></i>
-                            <span>Logout</span>
-                        </button>
+                        <button type="submit" class="w-full flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg"><i class="fas fa-sign-out-alt mr-3 text-primary-600"></i>Logout</button>
                     </form>
                 </li>
             </ul>
@@ -108,62 +91,59 @@
     </div>
 
     <!-- Main Content -->
-    <div id="mainContent" class="ml-0 transition-all duration-300">
+    <div id="mainContent" class="ml-0 lg:ml-64 transition-all duration-300 flex flex-col min-h-screen">
         <header class="bg-white shadow-sm sticky top-0 z-10">
             <nav class="container mx-auto px-6 py-4">
                 <div class="flex items-center justify-between">
-                    <h1 class="text-2xl font-bold text-gray-800">{{ $course->title }}</h1>
                     <div class="flex items-center space-x-4">
-                        <span class="text-gray-700 hidden sm:inline">{{ Auth::user()->name }}</span>
-                        <div class="bg-primary-100 p-2 rounded-full">
-                            <i class="fas fa-user text-primary-600"></i>
-                        </div>
+                        <a href="/courses" class="text-gray-600 hover:text-gray-800"><i class="fas fa-arrow-left"></i></a>
+                        <h1 class="text-2xl font-bold text-gray-800">{{ $course->title }}</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-gray-700 hidden sm:inline">{{ Auth::user()->full_name }}</span>
+                        <div class="bg-primary-100 p-2 rounded-full"><i class="fas fa-user text-primary-600"></i></div>
                     </div>
                 </div>
             </nav>
         </header>
 
-        <main class="container mx-auto px-6 py-8">
+        <main class="container mx-auto px-6 py-8 flex-grow">
             @if (session('success'))
-                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded animate-fade-in">
-                    <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
-                </div>
+                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded animate-fade-in"><i class="fas fa-check-circle mr-2"></i>{{ session('success') }}</div>
             @endif
             @if (session('info'))
-                <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded animate-fade-in">
-                    <i class="fas fa-info-circle mr-2"></i>{{ session('info') }}
-                </div>
+                <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded animate-fade-in"><i class="fas fa-info-circle mr-2"></i>{{ session('info') }}</div>
+            @endif
+            @if (session('error'))
+                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded animate-fade-in"><i class="fas fa-exclamation-circle mr-2"></i>{{ session('error') }}</div>
             @endif
 
-            <!-- Hero Section -->
+            <!-- Course Header -->
             <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
-                <div class="flex flex-col lg:flex-row gap-8">
-                    <div class="lg:w-2/3">
-                        <h1 class="text-4xl font-bold text-gray-800 mb-4">{{ $course->title }}</h1>
-                        <p class="text-gray-600 mb-4">{{ $course->short_description }}</p>
-                        <p class="text-gray-500 mb-4">By <span class="font-semibold">{{ $course->instructor_name }}</span> | Department: {{ $course->department }}</p>
-                        <p class="text-gray-500 mb-6">Modules: {{ $course->modules_count }}</p>
-                        @if ($isEnrolled)
-                            <a href="{{ route('courses.learn', $course->id) }}" class="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-indigo-700 text-lg">
-                                <i class="fas fa-play mr-2"></i> Continue Learning
-                            </a>
-                        @else
-                            <form method="POST" action="{{ route('courses.enroll', $course->id) }}" class="inline">
-                                @csrf
-                                <button type="submit" class="inline-flex items-center px-6 py-3 bg-accent text-white rounded-lg hover:bg-green-600 text-lg">
-                                    <i class="fas fa-plus mr-2"></i> Enroll Now
-                                </button>
-                            </form>
-                        @endif
-                    </div>
-                    <div class="lg:w-1/3">
-                        @if ($course->thumbnail)
-                            <img src="{{ url($course->thumbnail) }}" alt="{{ $course->title }}" class="w-full h-48 object-cover rounded-lg shadow-md">
-                        @else
-                            <div class="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-image text-gray-500 text-3xl"></i>
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+                    <img src="{{ $course->thumbnail ? asset('storage/' . $course->thumbnail) : asset('img/placeholder.jpg') }}" alt="{{ $course->title }}" class="w-full sm:w-48 h-48 object-cover rounded-lg">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800 mb-4">{{ $course->title }}</h1>
+                        <p class="text-gray-600 mb-6">{{ $course->description }}</p>
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+                            <div class="mb-4 sm:mb-0">
+                                <p class="text-gray-500">Instructor: {{ $course->instructor_name }}</p>
+                                <p class="text-gray-500">Department: {{ $course->department ?? 'N/A' }}</p>
+                                <p class="text-gray-500">Progress: {{ $userProgress }}%</p>
                             </div>
-                        @endif
+                            @if (!$isEnrolled)
+                                <form method="POST" action="{{ route('courses.enroll', $course->id) }}">
+                                    @csrf
+                                    <button type="submit" class="inline-flex items-center px-6 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700">
+                                        <i class="fas fa-book-open mr-2"></i> Enroll Now
+                                    </button>
+                                </form>
+                            @else
+                                <a href="{{ route('courses.learn', $course->id) }}" class="inline-flex items-center px-6 py-2 bg-accent text-white rounded-lg hover:bg-green-600">
+                                    <i class="fas fa-play-circle mr-2"></i> Continue Learning
+                                </a>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
@@ -172,41 +152,72 @@
             <div class="mb-12">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">Course Preview</h2>
                 <div class="course-card bg-white rounded-2xl shadow-lg p-6">
-                    @php
-                        $previewVideo = $course->videos->where('is_preview', true)->first();
-                    @endphp
                     @if ($previewVideo)
-                        <div class="mb-6">
-                            <h3 class="text-xl font-semibold text-gray-800 mb-3">Preview Video</h3>
-                            <div class="video-container rounded-lg overflow-hidden shadow-md">
-                                <video controls class="w-full">
-                                    <source src="{{ url($previewVideo->url) }}" type="video/mp4">
-                                    Your browser does not support the video tag.
-                                </video>
-                            </div>
+                        <div class="video-container rounded-lg overflow-hidden shadow-md mb-4">
+                            <video controls class="w-full">
+                                <source src="{{ asset($previewVideo->url) }}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">{{ $previewVideo->title }}</h3>
+                    @else
+                        <div class="bg-gray-200 rounded-lg p-6 text-center">
+                            <i class="fas fa-video text-gray-400 text-4xl mb-4"></i>
+                            <p class="text-gray-600">No preview video available.</p>
                         </div>
                     @endif
-                    <p class="text-gray-600 mb-4">{{ $course->description }}</p>
+                </div>
+            </div>
+
+            <!-- Course Content -->
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Course Content</h2>
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    @if ($course->video->isEmpty())
+                        <p class="text-gray-600">No content available yet.</p>
+                    @else
+                        <ul class="space-y-4">
+                            @foreach ($course->video as $video)
+                                @if ($video->segments->isNotEmpty())
+                                    <li>
+                                        <div class="flex items-center justify-between p-2 text-gray-700">
+                                            <span><i class="fas fa-video mr-2"></i>{{ $video->title }}</span>
+                                            <span class="text-xs text-gray-500">{{ $video->segments->count() }} segments</span>
+                                        </div>
+                                        <ul class="ml-6 space-y-2">
+                                            @foreach ($video->segments->sortBy('order') as $segment)
+                                                <li class="text-gray-600"><i class="fas fa-play-circle mr-2"></i>{{ $segment->title }} (Segment {{ $segment->order }})</li>
+                                            @endforeach
+                                        </ul>
+                                    </li>
+                                @endif
+                            @endforeach
+                        </ul>
+                    @endif
                 </div>
             </div>
         </main>
+
+        <footer class="bg-white shadow-sm mt-auto">
+            <div class="container mx-auto px-6 py-4 text-center text-gray-600">© {{ date('Y') }} UAUT LMS. All rights reserved.</div>
+        </footer>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const sidebarToggle = document.getElementById('sidebarToggle');
-            const closeSidebar = document.getElementById('closeSidebar');
-            const mainContent = document.getElementById('mainContent');
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.querySelector('#sidebar');
+            const sidebarToggle = document.querySelector('#sidebarToggle');
+            const closeSidebar = document.querySelector('#closeSidebar');
+            const mainContent = document.querySelector('#mainContent');
 
-            sidebarToggle.addEventListener('click', function() {
+            sidebarToggle.addEventListener('click', () => {
                 sidebar.classList.toggle('sidebar-collapsed');
                 mainContent.classList.toggle('ml-64');
                 mainContent.classList.toggle('ml-0');
                 sidebarToggle.classList.toggle('sidebar-toggle-collapsed');
             });
 
-            closeSidebar.addEventListener('click', function() {
+            closeSidebar.addEventListener('click', () => {
                 sidebar.classList.add('sidebar-collapsed');
                 mainContent.classList.remove('ml-64');
                 mainContent.classList.add('ml-0');
@@ -219,11 +230,6 @@
                     mainContent.classList.remove('ml-64');
                     mainContent.classList.add('ml-0');
                     sidebarToggle.classList.add('sidebar-toggle-collapsed');
-                } else {
-                    sidebar.classList.remove('sidebar-collapsed');
-                    mainContent.classList.add('ml-64');
-                    mainContent.classList.remove('ml-0');
-                    sidebarToggle.classList.remove('sidebar-toggle-collapsed');
                 }
             }
 
