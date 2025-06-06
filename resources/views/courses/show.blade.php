@@ -121,7 +121,7 @@
             <!-- Course Header -->
             <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
                 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-                    <img src="{{ $course->thumbnail ? asset('storage/' . $course->thumbnail) : asset('img/placeholder.jpg') }}" alt="{{ $course->title }}" class="w-full sm:w-48 h-48 object-cover rounded-lg">
+                    <img src="{{ $course->thumbnail ? asset('storage/' . $course->thumbnail) : asset('img/placeholder.jpg') }}" alt="{{ $course->title }} Thumbnail" class="w-full sm:w-48 h-48 object-cover rounded-lg" onerror="this.src='{{ asset('img/placeholder.jpg') }}'">
                     <div>
                         <h1 class="text-3xl font-bold text-gray-800 mb-4">{{ $course->title }}</h1>
                         <p class="text-gray-600 mb-6">{{ $course->description }}</p>

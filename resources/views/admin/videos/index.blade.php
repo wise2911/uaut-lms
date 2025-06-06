@@ -48,10 +48,10 @@
                     </a>
                 </li>
                 <li>
-                    {{-- <a href="{{ route('admin.ratings') }}" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition-colors {{ Route::is('admin.ratings') ? 'bg-gray-700' : '' }}">
+                    <a href="{{ route('admin.ratings') }}" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition-colors {{ Route::is('admin.ratings') ? 'bg-gray-700' : '' }}">
                         <i class="fas fa-star mr-3"></i>
                         <span>View Ratings</span>
-                    </a> --}}
+                    </a>
                 </li>
                 <li>
                     <form method="POST" action="{{ route('logout') }}">

@@ -150,7 +150,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         @foreach ($courses as $course)
                             <div class="course-card bg-white rounded-2xl shadow-md overflow-hidden">
-                                <img src="{{ $course->thumbnail ? asset('storage/' . $course->thumbnail) : asset('img/placeholder.jpg') }}" alt="{{ $course->title }}" class="w-full h-48 object-cover">
+                                <img src="{{ $course->thumbnail ? asset('storage/' . $course->thumbnail) : asset('img/placeholder.jpg') }}" alt="{{ $course->title }} Thumbnail" class="w-full h-48 object-cover" onerror="this.src='{{ asset('img/placeholder.jpg') }}'">
                                 <div class="p-5">
                                     <div class="flex justify-between items-start mb-2">
                                         <h3 class="text-lg font-semibold text-gray-800 line-clamp-2">{{ $course->title }}</h3>

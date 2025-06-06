@@ -38,7 +38,7 @@
                 <li>
                     <a href="{{ route('admin.videos.create') }}" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition-colors {{ Route::is('admin.videos.create') ? 'bg-gray-700' : '' }}">
                         <i class="fas fa-plus mr-3"></i>
-                        <span>Add Video</span>
+                        <span>Add Course</span>
                     </a>
                 </li>
                 <li>
@@ -80,9 +80,14 @@
                 {{ session('success') }}
             </div>
         @endif
+        @if (session('error'))
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-lg">
+                {{ session('error') }}
+            </div>
+        @endif
 
         <div class="bg-white rounded-xl shadow-lg p-6">
-            @if($courseRatings->isEmpty())
+            @if($ratings->isEmpty())
                 <div class="text-center py-8">
                     <i class="fas fa-star text-4xl text-gray-300 mb-4"></i>
                     <h3 class="text-lg font-medium text-gray-700">No ratings submitted yet</h3>
@@ -90,7 +95,18 @@
                 </div>
             @else
                 <div class="mb-4 flex flex-col sm:flex-row justify-between items-center">
-                    <input type="text" id="search" placeholder="Search ratings..." class="w-full sm:w-64 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+                    <form method="GET" action="{{ route('admin.ratings') }}" class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
+                        <input type="text" id="search" name="search" value="{{ $search ?? '' }}" placeholder="Search by course or user..." class="w-full sm:w-64 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+                        <select name="department" class="w-full sm:w-48 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option value="">All Departments</option>
+                            @foreach ($departments as $dept)
+                                <option value="{{ $dept }}" {{ $department == $dept ? 'selected' : '' }}>{{ $dept }}</option>
+                            @endforeach
+                        </select>
+                        <button type="submit" class="w-full sm:w-auto inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700">
+                            <i class="fas fa-search mr-2"></i> Search
+                        </button>
+                    </form>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full table-auto">
@@ -98,25 +114,26 @@
                             <tr class="bg-gray-100">
                                 <th class="px-4 py-2 text-left text-gray-600">User</th>
                                 <th class="px-4 py-2 text-left text-gray-600">Course</th>
-                                <th class="px-4 py-2 text-left text-gray-600">Average Rating</th>
+                                <th class="px-4 py-2 text-left text-gray-600">Responses</th>
                                 <th class="px-4 py-2 text-left text-gray-600">Feedback</th>
                                 <th class="px-4 py-2 text-left text-gray-600">Submitted</th>
                             </tr>
                         </thead>
                         <tbody id="ratings-table">
-                            @foreach($courseRatings as $rating)
+                            @foreach($ratings as $rating)
                                 <tr class="border-t">
                                     <td class="px-4 py-3">{{ $rating->user->full_name }}</td>
                                     <td class="px-4 py-3">{{ $rating->course->title }}</td>
                                     <td class="px-4 py-3">
-                                        <div class="flex">
-                                            @php
-                                                $averageRating = count($rating->responses) > 0 ? round(array_sum($rating->responses) / count($rating->responses)) : 0;
-                                            @endphp
-                                            @for ($i = 1; $i <= 5; $i++)
-                                                <i class="fas fa-star {{ $i <= $averageRating ? 'text-yellow-400' : 'text-gray-300' }}"></i>
-                                            @endfor
-                                        </div>
+                                        @if($rating->responses)
+                                            <ul class="list-disc list-inside">
+                                                @foreach($rating->responses as $key => $value)
+                                                    <li>{{ $key }}: {{ is_array($value) ? implode(', ', $value) : $value }}</li>
+                                                @endforeach
+                                            </ul>
+                                        @else
+                                            N/A
+                                        @endif
                                     </td>
                                     <td class="px-4 py-3">{{ $rating->feedback ?? 'N/A' }}</td>
                                     <td class="px-4 py-3">{{ $rating->created_at->format('M d, Y H:i') }}</td>
@@ -126,7 +143,7 @@
                     </table>
                 </div>
                 <div class="mt-8">
-                    {{ $courseRatings->links('vendor.pagination.tailwind') }}
+                    {{ $ratings->links('vendor.pagination.tailwind') }}
                 </div>
             @endif
         </div>
@@ -141,28 +158,19 @@
 
         const searchInput = document.getElementById('search');
         const tableBody = document.getElementById('ratings-table');
-        let ratings = @json($courseRatings->map(function($rating) {
-            return [
-                'id' => $rating->id,
-                'user' => ['full_name' => $rating->user->full_name],
-                'course' => ['title' => $rating->course->title],
-                'average_rating' => count($rating->responses) > 0 ? array_sum($rating->responses) / count($rating->responses) : 0,
-                'feedback' => $rating->feedback,
-                'created_at' => $rating->created_at->toDateTimeString(),
-            ];
-        }));
+        let ratings = JSON.parse({!! json_encode($ratingsJson) !!});
 
         function renderTable(data) {
             tableBody.innerHTML = '';
             data.forEach(rating => {
-                const stars = Array(5).fill(0).map((_, i) => `
-                    <i class="fas fa-star ${i < Math.round(rating.average_rating) ? 'text-yellow-400' : 'text-gray-300'}"></i>
-                `).join('');
+                const responses = rating.responses ? Object.entries(rating.responses).map(([key, value]) => {
+                    return `<li>${key}: ${Array.isArray(value) ? value.join(', ') : value}</li>`;
+                }).join('') : 'N/A';
                 tableBody.innerHTML += `
                     <tr class="border-t">
                         <td class="px-4 py-3">${rating.user.full_name}</td>
                         <td class="px-4 py-3">${rating.course.title}</td>
-                        <td class="px-4 py-3"><div class="flex">${stars}</div></td>
+                        <td class="px-4 py-3"><ul class="list-disc list-inside">${responses}</ul></td>
                         <td class="px-4 py-3">${rating.feedback || 'N/A'}</td>
                         <td class="px-4 py-3">${new Date(rating.created_at).toLocaleString('en-US', { month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
                     </tr>
@@ -175,7 +183,8 @@
             const filtered = ratings.filter(rating =>
                 rating.user.full_name.toLowerCase().includes(term) ||
                 rating.course.title.toLowerCase().includes(term) ||
-                (rating.feedback && rating.feedback.toLowerCase().includes(term))
+                (rating.feedback && rating.feedback.toLowerCase().includes(term)) ||
+                (rating.responses && JSON.stringify(rating.responses).toLowerCase().includes(term))
             );
             renderTable(filtered);
         });
