@@ -30,7 +30,6 @@ class VideoController extends Controller
             'new_course.description' => 'required|string',
             'new_course.department' => 'required|in:COBA,COEIT',
             'new_course.instructor_name' => 'required|string|max:255',
-            'new_course.price' => 'required|numeric|min:0',
             'new_course.thumbnail' => 'nullable|image|mimes:jpeg,png|max:2048',
             'new_course.video.preview.url' => 'required|string|max:255',
             'new_course.video.segments.*.title' => 'required|string|max:255',
@@ -49,7 +48,6 @@ class VideoController extends Controller
             'description' => $validated['new_course']['description'],
             'department' => $validated['new_course']['department'],
             'instructor_name' => $validated['new_course']['instructor_name'],
-            'price' => $validated['new_course']['price'],
             'thumbnail' => $thumbnailPath,
         ]);
 
@@ -147,3 +145,4 @@ class VideoController extends Controller
         return redirect()->route('admin.videos.index')->with('success', 'Course and video deleted successfully.');
     }
 }
+?>
