@@ -31,15 +31,33 @@
         <nav>
             <ul class="space-y-2">
                 <li>
-                    <a href="{{ route('admin.videos.index') }}" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition-colors {{ Route::is('admin.videos.*') ? 'bg-gray-700' : '' }}">
+                    <a href="{{ route('admin.videos.index') }}" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition-colors {{ Route::is('admin.videos.index') ? 'bg-gray-700' : '' }}">
                         <i class="fas fa-video mr-3"></i>
                         <span>Manage Videos</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.videos.create') }}" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition-colors {{ Route::is('admin.videos.create') ? 'bg-gray-700' : '' }}">
+                        <i class="fas fa-plus mr-3"></i>
+                        <span>Add Course</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('admin.users') }}" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition-colors {{ Route::is('admin.users') ? 'bg-gray-700' : '' }}">
                         <i class="fas fa-users mr-3"></i>
                         <span>Manage Users</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.ratings') }}" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition-colors {{ Route::is('admin.ratings') ? 'bg-gray-700' : '' }}">
+                        <i class="fas fa-star mr-3"></i>
+                        <span>View Ratings</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.payments') }}" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition-colors {{ Route::is('admin.payments') ? 'bg-gray-700' : '' }}">
+                        <i class="fas fa-money-bill mr-3"></i>
+                        <span>View Payments</span>
                     </a>
                 </li>
                 <li>
@@ -52,7 +70,7 @@
                     </form>
                 </li>
             </ul>
-        </nav>
+        </nav>>
     </aside>
 
     <!-- Main Content -->

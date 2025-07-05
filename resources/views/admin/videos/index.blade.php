@@ -38,7 +38,7 @@
                 <li>
                     <a href="{{ route('admin.videos.create') }}" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition-colors {{ Route::is('admin.videos.create') ? 'bg-gray-700' : '' }}">
                         <i class="fas fa-plus mr-3"></i>
-                        <span>Add Video</span>
+                        <span>Add Course</span>
                     </a>
                 </li>
                 <li>
@@ -51,6 +51,12 @@
                     <a href="{{ route('admin.ratings') }}" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition-colors {{ Route::is('admin.ratings') ? 'bg-gray-700' : '' }}">
                         <i class="fas fa-star mr-3"></i>
                         <span>View Ratings</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.payments') }}" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition-colors {{ Route::is('admin.payments') ? 'bg-gray-700' : '' }}">
+                        <i class="fas fa-money-bill mr-3"></i>
+                        <span>View Payments</span>
                     </a>
                 </li>
                 <li>

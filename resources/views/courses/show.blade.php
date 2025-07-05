@@ -7,6 +7,7 @@
     <link rel="shortcut icon" href="{{ url('img/uaut-logo.jpg') }}" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
     <script>
         tailwind.config = {
             theme: {
@@ -43,6 +44,11 @@
             width: 100%;
             height: 100%;
         }
+        .enroll-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .spinner { display: none; border: 2px solid #ffffff; border-top: 2px solid #4f46e5; border-radius: 50%; width: 12px; height: 12px; animation: spin 1s linear infinite; margin-right: 6px; }
+        .enroll-btn:disabled .spinner { display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .enroll-btn img { vertical-align: middle; }
     </style>
 </head>
 <body class="bg-gray-50 font-sans antialiased">
@@ -71,21 +77,54 @@
                 </div>
                 <div class="ml-3">
                     <p class="text-sm font-medium text-gray-600">Welcome back</p>
-                    <p class="text-lg font-semibold text-gray-800">{{ Auth::user()->full_name }}</p>
+                    <p class="text-lg font-semibold text-gray-800">{{ Auth::check() ? Auth::user()->name : 'Guest' }}</p>
                 </div>
             </div>
         </div>
         <div class="p-4">
             <ul class="space-y-2">
-                <li><a href="{{ route('user.home') }}" class="flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg"><i class="fas fa-home mr-3 text-primary-600"></i>Dashboard</a></li>
-                <li><a href="/courses" class="flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg"><i class="fas fa-book mr-3 text-primary-600"></i>All Courses</a></li>
-                <li><a href="#" class="flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg"><i class="fas fa-tasks mr-3 text-primary-600"></i>My Progress</a></li>
                 <li>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="w-full flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg"><i class="fas fa-sign-out-alt mr-3 text-primary-600"></i>Logout</button>
-                    </form>
+                    <a href="{{ route('user.home') }}" class="flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg">
+                        <i class="fas fa-home mr-3 text-primary-600"></i>
+                        <span>Dashboard</span>
+                    </a>
                 </li>
+                <li>
+                    <a href="{{ route('courses.index') }}" class="flex items-center p-3 text-gray-700 bg-primary-50 rounded-lg">
+                        <i class="fas fa-book mr-3 text-primary-600"></i>
+                        <span>All Courses</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg">
+                        <i class="fas fa-tasks mr-3 text-primary-600"></i>
+                        <span>My Progress</span>
+                    </a>
+                </li>
+                @auth
+                    <li>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="w-full flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg">
+                                <i class="fas fa-sign-out-alt mr-3 text-primary-600"></i>
+                                <span>Logout</span>
+                            </button>
+                        </form>
+                    </li>
+                @else
+                    <li>
+                        <a href="{{ route('login') }}" class="flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg">
+                            <i class="fas fa-sign-in-alt mr-3 text-primary-600"></i>
+                            <span>Login</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('register') }}" class="flex items-center p-3 text-gray-700 hover:bg-primary-50 rounded-lg">
+                            <i class="fas fa-user-plus mr-3 text-primary-600"></i>
+                            <span>Register</span>
+                        </a>
+                    </li>
+                @endauth
             </ul>
         </div>
     </div>
@@ -96,11 +135,11 @@
             <nav class="container mx-auto px-6 py-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-4">
-                        <a href="/courses" class="text-gray-600 hover:text-gray-800"><i class="fas fa-arrow-left"></i></a>
+                        <a href="{{ route('courses.index') }}" class="text-gray-600 hover:text-gray-800"><i class="fas fa-arrow-left"></i></a>
                         <h1 class="text-2xl font-bold text-gray-800">{{ $course->title }}</h1>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <span class="text-gray-700 hidden sm:inline">{{ Auth::user()->full_name }}</span>
+                        <span class="text-gray-700 hidden sm:inline">{{ Auth::check() ? Auth::user()->name : 'Guest' }}</span>
                         <div class="bg-primary-100 p-2 rounded-full"><i class="fas fa-user text-primary-600"></i></div>
                     </div>
                 </div>
@@ -129,20 +168,30 @@
                             <div class="mb-4 sm:mb-0">
                                 <p class="text-gray-500">Instructor: {{ $course->instructor_name }}</p>
                                 <p class="text-gray-500">Department: {{ $course->department ?? 'N/A' }}</p>
+                                <p class="text-gray-500">Price: ${{ number_format($course->price, 2) }}</p>
                                 <p class="text-gray-500">Progress: {{ $userProgress }}%</p>
                             </div>
-                            @if (!$isEnrolled)
-                                <form method="POST" action="{{ route('courses.enroll', $course->id) }}">
-                                    @csrf
-                                    <button type="submit" class="inline-flex items-center px-6 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700">
-                                        <i class="fas fa-book-open mr-2"></i> Enroll Now
-                                    </button>
-                                </form>
+                            @auth
+                                @if (!$isEnrolled)
+                                    <form action="{{ route('courses.enroll', $course->id) }}" method="POST" x-data="{ submitting: false }" @submit="submitting = true">
+                                        @csrf
+                                        <button type="submit" class="enroll-btn inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200" :disabled="submitting">
+                                            <span class="spinner"></span>
+                                            <span x-show="!submitting">Enroll with</span>
+                                            <span x-show="submitting">Processing...</span>
+                                            <img src="https://www.paypalobjects.com/webstatic/en_US/i/buttons/PP_logo_h_100x26.png" alt="PayPal" class="ml-2 h-6">
+                                        </button>
+                                    </form>
+                                @else
+                                    <a href="{{ route('courses.learn', $course->id) }}" class="inline-flex items-center px-4 py-2 bg-accent text-white rounded-lg hover:bg-green-600 transition-colors duration-200">
+                                        <i class="fas fa-play-circle mr-2"></i> Continue Learning
+                                    </a>
+                                @endif
                             @else
-                                <a href="{{ route('courses.learn', $course->id) }}" class="inline-flex items-center px-6 py-2 bg-accent text-white rounded-lg hover:bg-green-600">
-                                    <i class="fas fa-play-circle mr-2"></i> Continue Learning
+                                <a href="{{ route('login') }}" class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200">
+                                    <i class="fas fa-sign-in-alt mr-2"></i> Login to Enroll
                                 </a>
-                            @endif
+                            @endauth
                         </div>
                     </div>
                 </div>

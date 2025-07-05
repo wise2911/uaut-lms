@@ -48,13 +48,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('/users/{course}/{user}', [AdminUserController::class, 'unenroll'])->name('users.unenroll');
         Route::delete('/users/{user}', [AdminUserController::class, 'delete'])->name('users.delete');
         Route::get('/ratings', [AdminController::class, 'ratings'])->name('ratings');
+        Route::get('/payments', [AdminController::class, 'payments'])->name('payments');
     });
 });
 
 // Authenticated User Routes
 Route::middleware(['auth'])->group(function() {
     Route::get('/user/home', [UserHomeController::class, 'index'])->name('user.home');
-    Route::post('/courses/{courseId}/enroll', [UserHomeController::class, 'enroll'])->name('courses.enroll');
+    Route::post('/courses/{course}/enroll', [UserHomeController::class, 'enroll'])->name('courses.enroll');
+    Route::get('/courses/{course}/enroll/success', [UserHomeController::class, 'enrollSuccess'])->name('courses.payment.success');
+    Route::get('/courses/{course}/enroll/cancel', [UserHomeController::class, 'enrollCancel'])->name('courses.payment.cancel');
     Route::get('/courses/{course}/learn', [CourseController::class, 'learn'])->name('courses.learn');
     Route::post('/courses/{course}/mark-watched', [CourseController::class, 'markWatched'])->name('courses.mark-watched');
     Route::get('/courses/{course}/certificate', [CourseController::class, 'certificate'])->name('courses.certificate');

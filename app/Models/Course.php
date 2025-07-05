@@ -11,8 +11,8 @@ class Course extends Model
         'description',
         'instructor_name',
         'department',
-        'short_description',
         'thumbnail',
+        'price',
     ];
 
     public function users()

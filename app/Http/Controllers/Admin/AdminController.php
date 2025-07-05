@@ -3,46 +3,68 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\CourseRating;
 use App\Models\Course;
+use App\Models\CourseRating;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
     public function ratings(Request $request)
     {
-        $query = CourseRating::with('user', 'course');
-        
-        // Handle search
-        if ($search = $request->input('search')) {
-            $query->whereHas('course', fn($q) => $q->where('title', 'like', "%{$search}%"))
-                  ->orWhereHas('user', fn($q) => $q->where('full_name', 'like', "%{$search}%"))
-                  ->orWhere('feedback', 'like', "%{$search}%");
+        $search = $request->query('search');
+        $department = $request->query('department');
+        $departments = Course::distinct()->pluck('department')->filter()->values();
+
+        $query = CourseRating::with(['user', 'course']);
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('user', function ($q) use ($search) {
+                    $q->where('full_name', 'LIKE', "%{$search}%");
+                })
+                ->orWhereHas('course', function ($q) use ($search) {
+                    $q->where('title', 'LIKE', "%{$search}%");
+                })
+                ->orWhere('feedback', 'LIKE', "%{$search}%");
+            });
         }
 
-        // Handle department filter
-        if ($department = $request->input('department')) {
-            $query->whereHas('course', fn($q) => $q->where('department', $department));
+        if ($department) {
+            $query->whereHas('course', function ($q) use ($department) {
+                $q->where('department', $department);
+            });
         }
 
-        // Paginate ratings
-        $ratings = $query->paginate(10);
+        $ratings = $query->latest()->paginate(10);
+        $ratingsJson = $ratings->toJson();
 
-        // Prepare JSON for JavaScript
-        $ratingsJson = $ratings->getCollection()->map(function ($rating) {
-            return [
-                'id' => $rating->id,
-                'user' => ['full_name' => $rating->user->full_name],
-                'course' => ['title' => $rating->course->title],
-                'responses' => $rating->responses,
-                'feedback' => $rating->feedback,
-                'created_at' => $rating->created_at->toDateTimeString(),
-            ];
-        })->toJson();
+        return view('admin.rating', compact('ratings', 'ratingsJson', 'search', 'department', 'departments'));
+    }
 
-        // Get departments for filter
-        $departments = Course::distinct('department')->pluck('department');
+    public function payments(Request $request)
+    {
+        $search = $request->input('search');
+        $department = $request->input('department');
 
-        return view('admin.rating', compact('ratings', 'search', 'department', 'departments', 'ratingsJson'));
+        $query = Payment::with(['user', 'course'])
+            ->when($search, function ($query, $search) {
+                return $query->whereHas('user', function ($q) use ($search) {
+                    $q->where('full_name', 'like', "%{$search}%");
+                })->orWhereHas('course', function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%");
+                })->orWhere('payment_id', 'like', "%{$search}%");
+            })
+            ->when($department, function ($query, $department) {
+                return $query->whereHas('course', function ($q) use ($department) {
+                    $q->where('department', $department);
+                });
+            })
+            ->latest();
+
+        $payments = $query->paginate(10);
+        $departments = Course::distinct()->pluck('department')->sort()->values();
+
+        return view('admin.payments', compact('payments', 'departments', 'search', 'department'));
     }
 }

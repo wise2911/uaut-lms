@@ -42,6 +42,24 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ route('admin.users') }}" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition-colors {{ Route::is('admin.users') ? 'bg-gray-700' : '' }}">
+                        <i class="fas fa-users mr-3"></i>
+                        <span>Manage Users</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.ratings') }}" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition-colors {{ Route::is('admin.ratings') ? 'bg-gray-700' : '' }}">
+                        <i class="fas fa-star mr-3"></i>
+                        <span>View Ratings</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.payments') }}" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition-colors {{ Route::is('admin.payments') ? 'bg-gray-700' : '' }}">
+                        <i class="fas fa-money-bill mr-3"></i>
+                        <span>View Payments</span>
+                    </a>
+                </li>
+                <li>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="flex items-center p-2 w-full text-left rounded-lg hover:bg-gray-700 transition-colors">
@@ -62,6 +80,26 @@
         <header class="bg-white shadow-sm rounded-lg p-4 mb-6">
             <h1 class="text-2xl font-bold text-gray-800">Add New Course</h1>
         </header>
+
+        @if (session('success'))
+            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-lg">
+                {{ session('success') }}
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-lg">
+                {{ session('error') }}
+            </div>
+        @endif
+        @if ($errors->any())
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-lg">
+                <ul class="list-disc list-inside">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         <div class="bg-white rounded-xl shadow-lg p-6">
             <form id="course-form" action="{{ route('admin.videos.store') }}" method="POST" enctype="multipart/form-data">
@@ -102,8 +140,14 @@
                             @enderror
                         </div>
                         <div class="mb-4">
-                            <label for="thumbnail" class="block text-gray-7
-00 font-medium mb-2">Thumbnail</label>
+                            <label for="price" class="block text-gray-700 font-medium mb-2">Price ($)</label>
+                            <input type="number" name="new_course[price]" id="price" step="0.01" value="{{ old('new_course.price') }}" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary @error('new_course.price') border-red-500 @enderror" required>
+                            @error('new_course.price')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="mb-4">
+                            <label for="thumbnail" class="block text-gray-700 font-medium mb-2">Thumbnail</label>
                             <input type="file" name="new_course[thumbnail]" id="thumbnail" accept="image/jpeg,image/png" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-indigo-700 @error('new_course.thumbnail') border-red-500 @enderror">
                             @error('new_course.thumbnail')
                                 <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -153,7 +197,10 @@
                         </button>
                     </div>
                 </div>
-                <div class="mt-6">
+                <div class="mt-6 flex justify-end space-x-4">
+                    <a href="{{ route('admin.videos.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                        <i class="fas fa-times mr-2"></i> Cancel
+                    </a>
                     <button type="submit" id="submit-btn" class="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-indigo-700 transition-colors">
                         <i class="fas fa-save mr-2"></i> Create Course
                     </button>
@@ -163,7 +210,7 @@
     </main>
 
     <script>
-        let segmentCount = 1; // Start from 1 since we have one segment pre-filled
+        let segmentCount = 1;
         const addSegmentBtn = document.getElementById('add-segment');
         const segmentsDiv = document.getElementById('segments');
         const form = document.getElementById('course-form');
@@ -207,8 +254,9 @@
             sidebar.classList.toggle('-translate-x-full');
         });
 
-        submitBtn.addEventListener('click', () => {
+        form.addEventListener('submit', () => {
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating...';
+            submitBtn.disabled = true;
         });
     </script>
 </body>

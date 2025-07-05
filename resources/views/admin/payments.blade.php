@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Ratings | UAUT LMS</title>
+    <title>Manage Payments | UAUT LMS</title>
     <link rel="shortcut icon" href="{{ url('img/uaut-logo.jpg') }}" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -30,7 +30,7 @@
         <nav>
             <ul class="space-y-2">
                 <li>
-                    <a href="{{ route('admin.videos.index') }}" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition-colors {{ Route::is('admin.videos.index') ? 'bg-gray-700' : '' }}">
+                    <a href="{{ route('admin.videos.index') }}" class="flex items-center p-2 rounded-lg hover:bg-gray-700 transition-colors {{ Route::is('admin.videos.*') ? 'bg-gray-700' : '' }}">
                         <i class="fas fa-video mr-3"></i>
                         <span>Manage Videos</span>
                     </a>
@@ -78,7 +78,7 @@
         </button>
 
         <header class="bg-white shadow-sm rounded-lg p-4 mb-6 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-gray-800">Manage Ratings</h1>
+            <h1 class="text-2xl font-bold text-gray-800">Manage Payments</h1>
         </header>
 
         @if (session('success'))
@@ -93,16 +93,15 @@
         @endif
 
         <div class="bg-white rounded-xl shadow-lg p-6">
-            @if($ratings->isEmpty())
+            @if($payments->isEmpty())
                 <div class="text-center py-8">
-                    <i class="fas fa-star text-4xl text-gray-300 mb-4"></i>
-                    <h3 class="text-lg font-medium text-gray-700">No ratings submitted yet</h3>
-                    <p class="text-gray-500 mt-2">Ratings from users will appear here.</p>
+                    <i class="fas fa-money-bill text-4xl text-gray-300 mb-4"></i>
+                    <h3 class="text-lg font-medium text-gray-700">No payments recorded yet</h3>
                 </div>
             @else
                 <div class="mb-4 flex flex-col sm:flex-row justify-between items-center">
-                    <form method="GET" action="{{ route('admin.ratings') }}" class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
-                        <input type="text" id="search" name="search" value="{{ $search ?? '' }}" placeholder="Search by course or user..." class="w-full sm:w-64 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+                    <form method="GET" action="{{ route('admin.payments') }}" class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
+                        <input type="text" id="search" name="search" value="{{ $search ?? '' }}" placeholder="Search by user, course, or PayPal ID..." class="w-full sm:w-64 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
                         <select name="department" class="w-full sm:w-48 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
                             <option value="">All Departments</option>
                             @foreach ($departments as $dept)
@@ -113,45 +112,45 @@
                             <i class="fas fa-search mr-2"></i> Search
                         </button>
                     </form>
+                    <div class="mt-4 sm:mt-0 flex space-x-2">
+                        <button id="sort-amount" class="px-3 py-1 bg-gray-200 rounded-lg hover:bg-gray-300">Sort by Amount</button>
+                        <button id="sort-date" class="px-3 py-1 bg-gray-200 rounded-lg hover:bg-gray-300">Sort by Date</button>
+                    </div>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full table-auto">
+                    <table class="w-full table-auto border-collapse">
                         <thead>
                             <tr class="bg-gray-50 text-gray-600 text-sm uppercase tracking-wider">
                                 <th class="px-6 py-3 text-left font-medium">User</th>
                                 <th class="px-6 py-3 text-left font-medium">Course</th>
-                                <th class="px-6 py-3 text-left font-medium">Responses</th>
-                                <th class="px-6 py-3 text-left font-medium">Feedback</th>
-                                <th class="px-6 py-3 text-left font-medium">Submitted</th>
+                                <th class="px-6 py-3 text-left font-medium">Amount</th>
+                                <th class="px-6 py-3 text-left font-medium">PayPal Order ID</th>
+                                <th class="px-6 py-3 text-left font-medium">PayPal Transaction ID</th>
+                                <th class="px-6 py-3 text-left font-medium">Status</th>
+                                <th class="px-6 py-3 text-left font-medium">Date</th>
                             </tr>
                         </thead>
-                        <tbody id="ratings-table" class="divide-y divide-gray-200">
-                            @foreach($ratings as $rating)
+                        <tbody id="payments-table" class="divide-y divide-gray-200">
+                            @foreach($payments as $payment)
                                 <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-6 py-4 text-gray-700">{{ $rating->user->full_name }}</td>
-                                    <td class="px-6 py-4 text-gray-700">{{ $rating->course->title }}</td>
-                                    <td class="px-6 py-4 text-gray-700">
-                                        @if($rating->responses)
-                                            <div class="flex flex-col space-y-2">
-                                                @foreach($rating->responses as $key => $value)
-                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-colors">
-                                                        <span class="font-semibold mr-1">{{ $key }}:</span> {{ is_array($value) ? implode(', ', $value) : $value }}
-                                                    </span>
-                                                @endforeach
-                                            </div>
-                                        @else
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">N/A</span>
-                                        @endif
+                                    <td class="px-6 py-4 text-gray-700">{{ $payment->user->full_name }}</td>
+                                    <td class="px-6 py-4 text-gray-700">{{ $payment->course->title }}</td>
+                                    <td class="px-6 py-4 text-gray-700">${{ number_format($payment->amount, 2) }}</td>
+                                    <td class="px-6 py-4 text-gray-700">{{ $payment->paypal_order_id ?? 'N/A' }}</td>
+                                    <td class="px-6 py-4 text-gray-700">{{ $payment->paypal_transaction_id ?? 'N/A' }}</td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $payment->status === 'COMPLETED' ? 'bg-green-100 text-green-800' : ($payment->status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
+                                            {{ $payment->status }}
+                                        </span>
                                     </td>
-                                    <td class="px-6 py-4 text-gray-700">{{ $rating->feedback ?? 'N/A' }}</td>
-                                    <td class="px-6 py-4 text-gray-700">{{ $rating->created_at->format('M d, Y H:i') }}</td>
+                                    <td class="px-6 py-4 text-gray-700">{{ $payment->created_at->format('M d, Y H:i') }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
                 <div class="mt-8">
-                    {{ $ratings->links('vendor.pagination.tailwind') }}
+                    {{ $payments->links('vendor.pagination.tailwind') }}
                 </div>
             @endif
         </div>
@@ -165,24 +164,30 @@
         });
 
         const searchInput = document.getElementById('search');
-        const tableBody = document.getElementById('ratings-table');
-        let ratings = @json($ratings);
+        const sortAmount = document.getElementById('sort-amount');
+        const sortDate = document.getElementById('sort-date');
+        const tableBody = document.getElementById('payments-table');
+        let payments = @json($payments);
 
         function renderTable(data) {
             tableBody.innerHTML = '';
-            data.forEach(rating => {
-                const responses = rating.responses ? Object.entries(rating.responses).map(([key, value]) => {
-                    return `<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-colors">
-                                <span class="font-semibold mr-1">${key}:</span> ${Array.isArray(value) ? value.join(', ') : value}
-                            </span>`;
-                }).join('<br>') : `<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">N/A</span>`;
+            data.forEach(payment => {
+                const statusClass = payment.status === 'Complete' ? 'bg-green-100 text-green-800' : 
+                                   payment.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 
+                                   'bg-red-100 text-red-800';
                 tableBody.innerHTML += `
                     <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4 text-gray-700">${rating.user.full_name}</td>
-                        <td class="px-6 py-4 text-gray-700">${rating.course.title}</td>
-                        <td class="px-6 py-4 text-gray-700"><div class="flex flex-col space-y-2">${responses}</div></td>
-                        <td class="px-6 py-4 text-gray-700">${rating.feedback || 'N/A'}</td>
-                        <td class="px-6 py-4 text-gray-700">${new Date(rating.created_at).toLocaleString('en-US', { month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
+                        <td class="px-6 py-4 text-gray-700">${payment.user.full_name}</td>
+                        <td class="px-6 py-4 text-gray-700">${payment.course.title}</td>
+                        <td class="px-6 py-4 text-gray-700">$${parseFloat(payment.amount).toFixed(2)}</td>
+                        <td class="px-6 py-4 text-gray-700">${payment.paypal_order_id || 'N/A'}</td>
+                        <td class="px-6 py-4 text-gray-700">${payment.paypal_transaction_id || 'N/A'}</td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClass}">
+                                ${payment.status}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-gray-700">${new Date(payment.created_at).toLocaleString('en-US', { month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
                     </tr>
                 `;
             });
@@ -190,13 +195,23 @@
 
         searchInput.addEventListener('input', () => {
             const term = searchInput.value.toLowerCase();
-            const filtered = ratings.filter(rating =>
-                rating.user.full_name.toLowerCase().includes(term) ||
-                rating.course.title.toLowerCase().includes(term) ||
-                (rating.feedback && rating.feedback.toLowerCase().includes(term)) ||
-                (rating.responses && JSON.stringify(rating.responses).toLowerCase().includes(term))
+            const filtered = payments.filter(payment =>
+                payment.user.full_name.toLowerCase().includes(term) ||
+                payment.course.title.toLowerCase().includes(term) ||
+                (payment.paypal_order_id && payment.paypal_order_id.toLowerCase().includes(term)) ||
+                (payment.paypal_transaction_id && payment.paypal_transaction_id.toLowerCase().includes(term))
             );
             renderTable(filtered);
+        });
+
+        sortAmount.addEventListener('click', () => {
+            payments.sort((a, b) => parseFloat(a.amount) - parseFloat(b.amount));
+            renderTable(payments);
+        });
+
+        sortDate.addEventListener('click', () => {
+            payments.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            renderTable(payments);
         });
     </script>
 </body>

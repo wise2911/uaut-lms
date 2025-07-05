@@ -67,10 +67,12 @@
                     </div>
                     <p class="text-gray-400 mb-4">Empowering education through technology. Our learning management system provides a seamless experience for students and educators.</p>
                     <div class="flex space-x-4">
-                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-linkedin-in"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.facebook.com/uaut1" target="_blank" class="text-gray-400 hover:text-white transition">
+                            <i class="fab fa-facebook-f text-xl"></i>
+                        </a>
+                        <a href="https://www.instagram.com/uautuniversity/" target="_blank" class="text-gray-400 hover:text-white transition">
+                            <i class="fab fa-instagram text-xl"></i>
+                        </a>
                     </div>
                 </div>
                 
@@ -80,16 +82,21 @@
                         <li><a href="/" class="text-gray-400 hover:text-white transition">Home</a></li>
                         <li><a href="#courses" class="text-gray-400 hover:text-white transition">Courses</a></li>
                         <li><a href="#about" class="text-gray-400 hover:text-white transition">About Us</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition">Contact</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">Get Started</h3>
-                    <div class="space-y-4">
-                        <a href="/user/signup" class="inline-block w-full bg-blue-600 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-700 transition text-center">Sign Up</a>
-                        <a href="/user/login" class="inline-block w-full border border-white text-white px-6 py-3 rounded-md font-medium hover:bg-white hover:text-gray-900 transition text-center">Log In</a>
-                    </div>
+                    <h3 class="text-lg font-semibold mb-4">Contact Us</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-center text-gray-400">
+                            <i class="fas fa-envelope mr-3"></i>
+                            <span>admin@uaut.ac.tz</span>
+                        </li>
+                        <li class="flex items-center text-gray-400">
+                            <i class="fas fa-phone mr-3"></i>
+                            <span>+255 684 505 012</span>
+                        </li>
+                    </ul>
                 </div>
             </div>
             
@@ -98,7 +105,6 @@
                 <div class="flex space-x-6">
                     <a href="#" class="text-gray-500 hover:text-white text-sm transition">Privacy Policy</a>
                     <a href="#" class="text-gray-500 hover:text-white text-sm transition">Terms of Service</a>
-                    <a href="#" class="text-gray-500 hover:text-white text-sm transition">Help Center</a>
                 </div>
             </div>
         </div>

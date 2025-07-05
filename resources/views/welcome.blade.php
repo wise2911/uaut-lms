@@ -65,46 +65,34 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <!-- Course 1 -->
             <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
-                <div class="relative" style="padding-block-end: 56.25%;">
-                    <iframe class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/W6NZfCO5SIk" title="Web Development Overview" frameborder="0" allowfullscreen></iframe>
+                <div class="h-48 bg-gray-200 flex items-center justify-center">
+                    <img src="{{ asset('img/web.jpg') }}" alt="Web Development" class="h-full w-full object-cover">
                 </div>
                 <div class="p-6">
                     <h3 class="text-xl font-bold text-gray-800 mb-2">Web Development</h3>
                     <p class="text-gray-600 mb-4">Master modern web technologies including HTML5, CSS3, JavaScript, and frameworks.</p>
-                    <div class="flex items-center">
-                        <i class="fas fa-star text-yellow-400 mr-1"></i>
-                        <span class="text-gray-700 font-medium">4.8</span>
-                    </div>
                 </div>
             </div>
             
             <!-- Course 2 -->
             <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
-                <div class="relative" style="padding-block-end: 56.25%;">
-                    <iframe class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/VwN91x5i25g?list=PLBlnK6fEyqRgMCUAG0XRw78UA8qnv6jEx" title="Computer Networking Overview" frameborder="0" allowfullscreen></iframe>
+                <div class="h-48 bg-gray-200 flex items-center justify-center">
+                    <img src="{{ asset('img/css.jpg') }}" alt="Computer Networking" class="h-full w-full object-cover">
                 </div>
                 <div class="p-6">
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">Computer Networking</h3>
-                    <p class="text-gray-600 mb-4">Comprehensive training in network design, security protocols, and administration.</p>
-                    <div class="flex items-center">
-                        <i class="fas fa-star text-yellow-400 mr-1"></i>
-                        <span class="text-gray-700 font-medium">4.7</span>
-                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Modern CSS</h3>
+                    <p class="text-gray-600 mb-4">Comprehensive training in Css styling, learn Tailwind & Bootstrap Css.</p>
                 </div>
             </div>
             
             <!-- Course 3 -->
             <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
-                <div class="relative" style="padding-block-end: 56.25%;">
-                    <iframe class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/I9ceqw5Ny-4?list=PLSzsOkUDsvdtl3Pw48-R8lcK2oYkk40cm" title="Mobile Application Overview" frameborder="0" allowfullscreen></iframe>
+                <div class="h-48 bg-gray-200 flex items-center justify-center">
+                    <img src="{{ asset('img/digital.jpg') }}" alt="Mobile Development" class="h-full w-full object-cover">
                 </div>
                 <div class="p-6">
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">Mobile Application Development</h3>
-                    <p class="text-gray-600 mb-4">Build cross-platform apps using React Native and Flutter frameworks.</p>
-                    <div class="flex items-center">
-                        <i class="fas fa-star text-yellow-400 mr-1"></i>
-                        <span class="text-gray-700 font-medium">4.9</span>
-                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Digital Marketing</h3>
+                    <p class="text-gray-600 mb-4">As a result, digital marketing has turned into a smart business strategy.</p>
                 </div>
             </div>
         </div>
@@ -151,9 +139,6 @@
                         <p class="ml-3 text-gray-600">Career support and professional networking</p>
                     </div>
                 </div>
-                <a href="#" class="inline-block mt-8 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition duration-300">
-                    Learn More About Us
-                </a>
             </div>
         </div>
     </div>
